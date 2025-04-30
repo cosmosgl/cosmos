@@ -272,15 +272,14 @@ export class Graph {
    * @param {Float32Array} pointPositions - A Float32Array representing the positions of points in the format [x1, y1, x2, y2, ..., xn, yn],
    * where `n` is the index of the point.
    * Example: `new Float32Array([1, 2, 3, 4, 5, 6])` sets the first point to (1, 2), the second point to (3, 4), and so on.
-   * @param {boolean | undefined} rescaleOverride - Overrides the `config.rescalePositions` setting for this call only.
-   *   - `true`: Force rescaling.
-   *   - `false`: Force *no* rescaling. This will not reset the scale functions.
-   *   - `undefined` (default): Use the behavior defined by `config.rescalePositions`.
+   * @param {boolean | undefined} dontRescale - For this call only, don't rescale the points.
+   *   - `true`: Don't rescale.
+   *   - `false` or `undefined` (default): Use the behavior defined by `config.rescalePositions`.
    */
-  public setPointPositions (pointPositions: Float32Array, rescaleOverride?: boolean | undefined): void {
+  public setPointPositions (pointPositions: Float32Array, dontRescale?: boolean | undefined): void {
     if (this._isDestroyed) return
     this.graph.inputPointPositions = pointPositions
-    this.points.rescaleOverride = rescaleOverride
+    this.points.dontRescale = dontRescale
     this._hasPointPositionsChanged = true
   }
 

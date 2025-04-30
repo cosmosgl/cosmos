@@ -29,7 +29,7 @@ export class Points extends CoreModule {
   public greyoutStatusFbo: regl.Framebuffer2D | undefined
   public scaleX: ((x: number) => number) | undefined
   public scaleY: ((y: number) => number) | undefined
-  public rescaleOverride: boolean | undefined
+  public dontRescale: boolean | undefined
   private colorBuffer: regl.Buffer | undefined
   private sizeFbo: regl.Framebuffer2D | undefined
   private sizeBuffer: regl.Buffer | undefined
@@ -56,26 +56,31 @@ export class Points extends CoreModule {
   private sampledPointIndices: regl.Buffer | undefined
 
   public updatePositions (): void {
-    const { reglInstance, store, data, config: { rescalePositions: configRescale, enableSimulation } } = this
+    const { reglInstance, store, data, config: { rescalePositions, enableSimulation } } = this
 
     const { pointsTextureSize } = store
     if (!pointsTextureSize || !data.pointPositions || data.pointsNumber === undefined) return
 
     const initialState = new Float32Array(pointsTextureSize * pointsTextureSize * 4)
-    // Rescale positions only when rescaling is enabled OR rescaling is not set and simulation is disabled
-    const rescalePositions = this.rescaleOverride ?? configRescale
-    if (rescalePositions === true || (rescalePositions === undefined && !enableSimulation)) {
+
+    let shouldRescale = rescalePositions
+    // If rescalePositions isn't specified in config and simulation is disabled, default to true
+    if (rescalePositions === undefined && !enableSimulation) shouldRescale = true
+    // Skip rescaling if `dontRescale` flag is set (allowing one-time skip of rescaling)
+    // Temporary flag is used to skip rescaling when change point positions or adding new points by function `setPointPositions`
+    // This flag overrides any other rescaling settings
+    if (this.dontRescale) shouldRescale = false
+
+    if (shouldRescale) {
       this.rescaleInitialNodePositions()
-    } else {
-      // If rescaling value was not forced to false, reset the scale functions
-      if (this.rescaleOverride !== false) {
-        this.scaleX = undefined
-        this.scaleY = undefined
-      }
+    } else if (!this.dontRescale) {
+      // Only reset scale functions if not temporarily skipping rescale
+      this.scaleX = undefined
+      this.scaleY = undefined
     }
 
-    // Reset the rescale override flag as it has been applied
-    this.rescaleOverride = undefined
+    // Reset temporary flag
+    this.dontRescale = undefined
 
     for (let i = 0; i < data.pointsNumber; ++i) {
       initialState[i * 4 + 0] = data.pointPositions[i * 2 + 0] as number
