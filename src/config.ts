@@ -390,6 +390,7 @@ export interface GraphConfigInterface {
   scalePointsOnZoom?: boolean;
   /**
    * Initial zoom level. Can be set once during graph initialization.
+   * If set, `fitViewOnInit` value will be ignored.
    * Default value: `undefined`
    */
   initialZoomLevel?: number;
@@ -412,6 +413,7 @@ export interface GraphConfigInterface {
   enableDrag?: boolean;
   /**
    * Whether to center and zoom the view to fit all points in the scene on initialization or not.
+   * Ignored if `initialZoomLevel` is set.
    * Default: `true`
    */
   fitViewOnInit?: boolean;
