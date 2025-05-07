@@ -63,16 +63,17 @@ export class Graph {
   private _isFirstRenderAfterInit = true
   private _fitViewOnInitTimeoutID: number | undefined
 
-  private _hasPointPositionsChanged = false
-  private _hasPointColorsChanged = false
-  private _hasPointSizesChanged = false
-  private _hasLinksChanged = false
-  private _hasLinkColorsChanged = false
-  private _hasLinkWidthsChanged = false
-  private _hasLinkArrowsChanged = false
-  private _hasPointClustersChanged = false
-  private _hasClusterPositionsChanged = false
-  private _hasPointClusterForceChanged = false
+  private _needsPointPositionsUpdate = false
+  private _needsPointColorUpdate = false
+  private _needsPointSizeUpdate = false
+  private _needsLinksUpdate = false
+  private _needsLinkColorUpdate = false
+  private _needsLinkWidthUpdate = false
+  private _needsLinkArrowUpdate = false
+  private _needsPointClusterUpdate = false
+  private _needsForceManyBodyUpdate = false
+  private _needsForceLinkUpdate = false
+  private _needsForceCenterUpdate = false
 
   private _isDestroyed = false
 
@@ -280,7 +281,16 @@ export class Graph {
     if (this._isDestroyed) return
     this.graph.inputPointPositions = pointPositions
     this.points.dontRescale = dontRescale
-    this._hasPointPositionsChanged = true
+    this._needsPointPositionsUpdate = true
+    // Links related texture depends on point positions, so we need to update it
+    this._needsLinksUpdate = true
+    // Point related textures depend on point positions length, so we need to update them
+    this._needsPointColorUpdate = true
+    this._needsPointSizeUpdate = true
+    this._needsPointClusterUpdate = true
+    this._needsForceManyBodyUpdate = true
+    this._needsForceLinkUpdate = true
+    this._needsForceCenterUpdate = true
   }
 
   /**
@@ -293,7 +303,7 @@ export class Graph {
   public setPointColors (pointColors: Float32Array): void {
     if (this._isDestroyed) return
     this.graph.inputPointColors = pointColors
-    this._hasPointColorsChanged = true
+    this._needsPointColorUpdate = true
   }
 
   /**
@@ -306,7 +316,7 @@ export class Graph {
   public setPointSizes (pointSizes: Float32Array): void {
     if (this._isDestroyed) return
     this.graph.inputPointSizes = pointSizes
-    this._hasPointSizesChanged = true
+    this._needsPointSizeUpdate = true
   }
 
   /**
@@ -320,7 +330,12 @@ export class Graph {
   public setLinks (links: Float32Array): void {
     if (this._isDestroyed) return
     this.graph.inputLinks = links
-    this._hasLinksChanged = true
+    this._needsLinksUpdate = true
+    // Links related texture depends on links length, so we need to update it
+    this._needsLinkColorUpdate = true
+    this._needsLinkWidthUpdate = true
+    this._needsLinkArrowUpdate = true
+    this._needsForceLinkUpdate = true
   }
 
   /**
@@ -333,7 +348,7 @@ export class Graph {
   public setLinkColors (linkColors: Float32Array): void {
     if (this._isDestroyed) return
     this.graph.inputLinkColors = linkColors
-    this._hasLinkColorsChanged = true
+    this._needsLinkColorUpdate = true
   }
 
   /**
@@ -346,7 +361,7 @@ export class Graph {
   public setLinkWidths (linkWidths: Float32Array): void {
     if (this._isDestroyed) return
     this.graph.inputLinkWidths = linkWidths
-    this._hasLinkWidthsChanged = true
+    this._needsLinkWidthUpdate = true
   }
 
   /**
@@ -359,7 +374,7 @@ export class Graph {
   public setLinkArrows (linkArrows: boolean[]): void {
     if (this._isDestroyed) return
     this.graph.linkArrowsBoolean = linkArrows
-    this._hasLinkArrowsChanged = true
+    this._needsLinkArrowUpdate = true
   }
 
   /**
@@ -372,6 +387,7 @@ export class Graph {
   public setLinkStrength (linkStrength: Float32Array): void {
     if (this._isDestroyed) return
     this.graph.inputLinkStrength = linkStrength
+    this._needsForceLinkUpdate = true
   }
 
   /**
@@ -388,7 +404,7 @@ export class Graph {
   public setPointClusters (pointClusters: (number | undefined)[]): void {
     if (this._isDestroyed) return
     this.graph.inputPointClusters = pointClusters
-    this._hasPointClustersChanged = true
+    this._needsPointClusterUpdate = true
   }
 
   /**
@@ -404,7 +420,7 @@ export class Graph {
   public setClusterPositions (clusterPositions: (number | undefined)[]): void {
     if (this._isDestroyed) return
     this.graph.inputClusterPositions = clusterPositions
-    this._hasClusterPositionsChanged = true
+    this._needsPointClusterUpdate = true
   }
 
   /**
@@ -420,7 +436,7 @@ export class Graph {
   public setPointClusterStrength (clusterStrength: Float32Array): void {
     if (this._isDestroyed) return
     this.graph.inputClusterStrength = clusterStrength
-    this._hasPointClusterForceChanged = true
+    this._needsPointClusterUpdate = true
   }
 
   /**
@@ -433,10 +449,6 @@ export class Graph {
   public render (simulationAlpha?: number): void {
     if (this._isDestroyed) return
     this.graph.update()
-    this._hasPointColorsChanged = true
-    this._hasPointSizesChanged = true
-    this._hasLinkColorsChanged = true
-    this._hasLinkWidthsChanged = true
     const { fitViewOnInit, fitViewDelay, fitViewPadding, fitViewDuration, fitViewByPointsInRect, initialZoomLevel } = this.config
     if (!this.graph.pointsNumber && !this.graph.linksNumber) {
       this.stopFrames()
@@ -889,36 +901,38 @@ export class Graph {
   }
 
   /**
-   * Create new Cosmos instance.
+   * Updates and recreates the graph visualization based on pending changes.
    */
   public create (): void {
     if (this._isDestroyed) return
-    if (this._hasPointPositionsChanged) this.points.updatePositions()
-    if (this._hasPointColorsChanged) this.points.updateColor()
-    if (this._hasPointSizesChanged) this.points.updateSize()
+    if (this._needsPointPositionsUpdate) this.points.updatePositions()
+    if (this._needsPointColorUpdate) this.points.updateColor()
+    if (this._needsPointSizeUpdate) this.points.updateSize()
 
-    if (this._hasLinksChanged || this._hasPointPositionsChanged) this.lines.updatePointsBuffer()
-    if (this._hasLinkColorsChanged) this.lines.updateColor()
-    if (this._hasLinkWidthsChanged) this.lines.updateWidth()
-    if (this._hasLinkArrowsChanged) this.lines.updateArrow()
-    this.lines.updateCurveLineGeometry()
+    if (this._needsLinksUpdate) this.lines.updatePointsBuffer()
+    if (this._needsLinkColorUpdate) this.lines.updateColor()
+    if (this._needsLinkWidthUpdate) this.lines.updateWidth()
+    if (this._needsLinkArrowUpdate) this.lines.updateArrow()
 
-    this.forceManyBody?.create()
-    this.forceLinkIncoming?.create(LinkDirection.INCOMING)
-    this.forceLinkOutgoing?.create(LinkDirection.OUTGOING)
-    this.forceCenter?.create()
-    if (this._hasPointClustersChanged || this._hasClusterPositionsChanged || this._hasPointClusterForceChanged) this.clusters?.create()
+    if (this._needsForceManyBodyUpdate) this.forceManyBody?.create()
+    if (this._needsForceLinkUpdate) {
+      this.forceLinkIncoming?.create(LinkDirection.INCOMING)
+      this.forceLinkOutgoing?.create(LinkDirection.OUTGOING)
+    }
+    if (this._needsForceCenterUpdate) this.forceCenter?.create()
+    if (this._needsPointClusterUpdate) this.clusters?.create()
 
-    this._hasPointPositionsChanged = false
-    this._hasPointColorsChanged = false
-    this._hasPointSizesChanged = false
-    this._hasLinksChanged = false
-    this._hasLinkColorsChanged = false
-    this._hasLinkWidthsChanged = false
-    this._hasLinkArrowsChanged = false
-    this._hasPointClustersChanged = false
-    this._hasClusterPositionsChanged = false
-    this._hasPointClusterForceChanged = false
+    this._needsPointPositionsUpdate = false
+    this._needsPointColorUpdate = false
+    this._needsPointSizeUpdate = false
+    this._needsLinksUpdate = false
+    this._needsLinkColorUpdate = false
+    this._needsLinkWidthUpdate = false
+    this._needsLinkArrowUpdate = false
+    this._needsPointClusterUpdate = false
+    this._needsForceManyBodyUpdate = false
+    this._needsForceLinkUpdate = false
+    this._needsForceCenterUpdate = false
   }
 
   /**
