@@ -1,4 +1,4 @@
-import { Graph, GraphConfigInterface } from '@cosmograph/cosmos'
+import { Graph, GraphConfigInterface } from '@cosmos.gl/graph'
 
 export type CosmosStoryProps = GraphConfigInterface & {
   pointPositions: Float32Array;

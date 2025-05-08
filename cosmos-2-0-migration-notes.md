@@ -1,8 +1,8 @@
-### Migration Guide @cosmograph/cosmos v2.0 
+### Migration Guide cosmos.gl v2.0 
 
 #### Introduction
 
-Welcome to the updated @cosmograph/cosmos library! Version 2.0 introduces significant improvements in data handling and performance, marking a major milestone for the library. This guide will help you transition to the new version smoothly.
+Welcome to the updated cosmos.gl library! Version 2.0 introduces significant improvements in data handling and performance, marking a major milestone for the library. This guide will help you transition to the new version smoothly.
 
 #### Key Changes in Data Handling
 

@@ -1,4 +1,4 @@
-import { Graph } from '@cosmograph/cosmos'
+import { Graph } from '@cosmos.gl/graph'
 
 export const createClusterLabels = (props: { div: HTMLDivElement }): (graph: Graph) => void => {
   const clusterLabelDivs: HTMLDivElement[] = []

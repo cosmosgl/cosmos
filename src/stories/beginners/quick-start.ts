@@ -1,4 +1,4 @@
-import { Graph, GraphConfigInterface } from '@cosmograph/cosmos'
+import { Graph, GraphConfigInterface } from '@cosmos.gl/graph'
 
 export const quickStart = (): { graph: Graph; div: HTMLDivElement} => {
   const div = document.createElement('div')
