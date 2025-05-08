@@ -1,4 +1,4 @@
-import { GraphConfigInterface } from '@cosmograph/cosmos'
+import { GraphConfigInterface } from '@cosmos.gl/graph'
 
 export const config: GraphConfigInterface = {
   spaceSize: 4096,

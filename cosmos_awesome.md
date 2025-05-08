@@ -1,7 +1,7 @@
 ## About
-The cosmos awesome list is a list of awesome things curated by the community.
+The cosmos.gl awesome list is a list of awesome things curated by the community.
 
-## Cosmos Examples:
+## cosmos.gl Examples:
 **MathWorks/Kuu** The MathWorks, Inc: symmetric positive definite matrix
 - Source: https://sparse.tamu.edu/MathWorks/Kuu
 - Example: https://cosmograph.app/run/?data=https://cosmograph.app/data/Kuu.csv

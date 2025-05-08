@@ -1,4 +1,4 @@
-import { Graph } from '@cosmograph/cosmos'
+import { Graph } from '@cosmos.gl/graph'
 import { generateData } from './data-gen'
 import './style.css'
 
