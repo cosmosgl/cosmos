@@ -12,8 +12,8 @@ title: "Cosmograph: GPU-accelerated Force Graph Layout and Rendering"
 version: 2.0.0
 date-released: 2024-12-20
 url: "https://cosmograph.app"
-repository-code: 'https://github.com/cosmograph-org/cosmos'
-repository-artifact: 'https://www.npmjs.com/package/@cosmograph/cosmos'
+repository-code: 'https://github.com/cosmosgl/graph'
+repository-artifact: 'https://www.npmjs.com/package/@cosmos.gl/graph'
 keywords:
   - Force Graph
   - GPU

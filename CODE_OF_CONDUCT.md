@@ -16,8 +16,8 @@ specific emails that can be used to report and escalate issues.
 
 ### Project Spaces
 
-For reporting issues in spaces related to Cosmos please use the email
-`cosmos@rokotyan.com`. Cosmos handles CoC issues
+For reporting issues in spaces related to cosmos.gl please use the email
+`cosmosgl@rokotyan.com`. Cosmos.gl handles CoC issues
 related to the spaces that it maintains. Projects maintainers commit to:
 
 - maintain the confidentiality with regard to the reporter of an incident

@@ -2,8 +2,8 @@
 We want to make contributing to this project as easy and transparent as possible.
 
 ## Code of Conduct
-Cosmos has a Code of Conduct that we expect project participants to adhere
-to. Please read [the full text](https://github.com/cosmograph-org/cosmos/CODE_OF_CONDUCT.md) so that you can understand
+cosmos.gl has a Code of Conduct that we expect project participants to adhere
+to. Please read [the full text](https://github.com/cosmos.gl/graph/CODE_OF_CONDUCT.md) so that you can understand
 what actions will and will not be tolerated.
 
 ## Our Development Process

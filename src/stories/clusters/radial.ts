@@ -1,5 +1,5 @@
 
-import { Graph } from '@cosmograph/cosmos'
+import { Graph } from '@cosmos.gl/graph'
 import { createCosmos } from '../create-cosmos'
 import { generateMeshData } from '../generate-mesh-data'
 

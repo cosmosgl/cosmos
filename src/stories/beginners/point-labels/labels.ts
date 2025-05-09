@@ -1,5 +1,5 @@
 import { LabelRenderer, LabelOptions } from '@interacta/css-labels'
-import { Graph } from '@cosmograph/cosmos'
+import { Graph } from '@cosmos.gl/graph'
 
 export class CosmosLabels {
   private labelRenderer: LabelRenderer

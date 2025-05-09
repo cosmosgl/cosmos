@@ -4,13 +4,13 @@ import { Meta } from "@storybook/blocks";
 
 ### <a name="set_config" href="#set_config">#</a> graph.<b>setConfig</b>(<i>config</i>)
 
-This method sets the [Cosmos configuration](../?path=/docs/configuration--docs). The changes are applied in real-time.
+This method sets the [cosmos.gl configuration](../?path=/docs/configuration--docs). The changes are applied in real-time.
 
-* **`config`** (Object): The configuration object adhering to Cosmos configuration properties.
+* **`config`** (Object): The configuration object adhering to cosmos.gl configuration properties.
 
 ### <a name="set_point_positions" href="#set_point_positions">#</a> graph.<b>setPointPositions</b>(<i>pointPositions</i>)
 
-This method sets the positions of points in a Cosmos graph using the provided coordinates array.
+This method sets the positions of points in a cosmos.gl graph using the provided coordinates array.
 
 * **`pointPositions`** (Float32Array): A Float32Array representing the x and y coordinates of points in the format `[x1, y1, x2, y2, ..., xN, yN]`. Each pair represents the coordinates of a single point.
 
@@ -22,7 +22,7 @@ graph.render();
 
 ### <a name="set_point_colors" href="#set_point_colors">#</a> graph.<b>setPointColors</b>(<i>pointColors</i>)
 
-This method sets the colors for points in a Cosmos graph.
+This method sets the colors for points in a cosmos.gl graph.
 
 * **`pointColors`** (Float32Array): A Float32Array representing the colors of points in the format `[r1, g1, b1, a1, r2, g2, b2, a2, ..., rN, gN, bN, aN]`, where each color is represented in RGBA format:
     - **`r`**: Red value (0.0-1.0)
@@ -62,7 +62,7 @@ This example sets the size of the first point to 10, the second point to 20, and
 
 ### <a name="set_links" href="#set_links">#</a> graph.<b>setLinks</b>(<i>links</i>)
 
-This method sets the links (connections) between points in a Cosmos graph.
+This method sets the links (connections) between points in a cosmos.gl graph.
 
 * **`links`** (Float32Array): A Float32Array representing the connections between points in the format `[source1, target1, source2, target2, ..., sourceN, targetN]`, where `source` and `target` are the indices of the points being linked. Each pair of elements in the array represents a single link.
 
@@ -319,7 +319,7 @@ This method retrieves the radius of a point in the graph identified by its <i>in
 
 ### <a name="track_point_positions_by_indices" href="#track_point_positions_by_indices">#</a> graph.<b>trackPointPositionsByIndices</b>(<i>indices</i>)
 
-This method allows you to monitor the coordinates of specific points over time. This is particularly useful for observing dynamic changes in the positions of points during the simulation. The positions of the tracked points are updated on each tick of the Cosmos simulation.
+This method allows you to monitor the coordinates of specific points over time. This is particularly useful for observing dynamic changes in the positions of points during the simulation. The positions of the tracked points are updated on each tick of the cosmos.gl simulation.
 
 * **`indices`** (Array): An array of numbers representing the indices of points to be tracked.
 
@@ -370,11 +370,11 @@ Renders a single frame of the simulation and pauses the simulation if it was act
 
 ### <a name="destroy" href="#destroy">#</a> graph.<b>destroy</b>()
 
-Destroys the current Cosmos instance.
+Destroys the current cosmos.gl instance.
 
 ### <a name="create" href="#create">#</a> graph.<b>create</b>()
 
-Creates a new Cosmos instance.
+Creates a new cosmos.gl instance.
 
 
 ### <a name="flatten" href="#flatten">#</a> graph.<b>flatten</b>(<i>pointPositions</i>)
@@ -430,3 +430,7 @@ Retrieves the Y-axis rescaling function used for position transformations when r
 
 **Returns:** 
 - A function mapping data values to Y-coordinates, or `undefined` if rescaling is disabled.
+
+---
+Copyright [OpenJS Foundation](https://openjsf.org) and cosmos.gl contributors. All rights reserved. The [OpenJS Foundation](https://openjsf.org) has registered trademarks and uses trademarks.  For a list of trademarks of the [OpenJS Foundation](https://openjsf.org), please see our [Trademark Policy](https://trademark-policy.openjsf.org/) and [Trademark List](https://trademark-list.openjsf.org/).  Trademarks and logos not indicated on the [list of OpenJS Foundation trademarks](https://trademark-list.openjsf.org) are trademarks™ or registered® trademarks of their respective holders. Use of them does not imply any affiliation with or endorsement by them.
+[The OpenJS Foundation](https://openjsf.org/) | [Terms of Use](https://terms-of-use.openjsf.org/) | [Privacy Policy](https://privacy-policy.openjsf.org/) | [Bylaws](https://bylaws.openjsf.org/) | [Code of Conduct](https://code-of-conduct.openjsf.org) | [Trademark Policy](https://trademark-policy.openjsf.org/) | [Trademark List](https://trademark-list.openjsf.org/) | [Cookie Policy](https://www.linuxfoundation.org/cookies/)

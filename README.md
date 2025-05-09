@@ -1,10 +1,14 @@
 
 <p align="center" style="color: #444">
-  <h1 align="center">🌌 cosmos.gl</h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://github.com/user-attachments/assets/1428fb58-c85e-4f9c-8f14-5be2f7c73b16">
+    <source media="(prefers-color-scheme: light)" srcset="https://github.com/user-attachments/assets/44cdb7c6-2ccd-4ed0-a6c3-e9c4606559f0">
+    <img align="center" width="225px" alt="cosmos.gl logo" src="https://github.com/user-attachments/assets/1428fb58-c85e-4f9c-8f14-5be2f7c73b16">
+  </picture>
 </p>
 <p align="center" style="font-size: 1.2rem;">GPU-accelerated Force Graph</p>
 
-**Cosmos.gl** is a WebGL Force Graph layout algorithm and rendering engine. All the computations and drawing are happening on the GPU in fragment and vertex shaders, avoiding expensive memory operations. It enables real-time simulation of network graphs consisting of hundreds of thousands of points and links on modern hardware.
+**Cosmos.gl** is a high-performance WebGL Force Graph algorithm and rendering engine. All the computations and drawing occur on the GPU in fragment and vertex shaders, avoiding expensive memory operations. It enables the real-time simulation of network graphs consisting of hundreds of thousands of points and links on modern hardware.
 
 This engine powers 🪐 [Cosmograph](http://cosmograph.app) — a toolset for exploring complex networks and AI embeddings.
 
@@ -13,7 +17,7 @@ This engine powers 🪐 [Cosmograph](http://cosmograph.app) — a toolset for ex
 
 [📺 Comparison with other libraries](https://www.youtube.com/watch?v=HWk78hP8aEE)
 
-[🎮 Check out our storybook for examples](https://cosmosgl.github.io/cosmos/)
+[🎮 Check out our storybook for examples](https://cosmosgl.github.io/graph/)
 
 ---
 
@@ -22,26 +26,27 @@ This engine powers 🪐 [Cosmograph](http://cosmograph.app) — a toolset for ex
 Install the package:
 
 ```bash
-npm install @cosmograph/cosmos
+npm install @cosmos.gl/graph
 ```
 
-Get the data, [configure](../?path=/docs/configuration--docs) the graph and run the simulation:
+Get the data, [configure](https://cosmosgl.github.io/graph/?path=/docs/configuration--docs) the graph and run the simulation:
 
 ```javascript
-import { Graph } from '@cosmograph/cosmos'
+import { Graph } from '@cosmos.gl/graph'
 
 const div = document.querySelector('div')
 const config = {
   spaceSize: 4096,
   simulationFriction: 0.1, // keeps the graph inert
-  simulationGravity: 0, // disables gravity
+  simulationGravity: 0, // disables the gravity force
   simulationRepulsion: 0.5, // increases repulsion between points
   curvedLinks: true, // curved links
+  fitViewOnInit: true, // fit the view to the graph after initialization
   fitViewDelay: 1000, // wait 1 second before fitting the view
-  fitViewPadding: 0.3, // centers the graph width padding of ~30% of screen
-  disableRescalePositions: false, // rescale positions
+  fitViewPadding: 0.3, // centers the graph with a padding of ~30% of screen
+  rescalePositions: false, // rescale positions, useful when coordinates are too small
   enableDrag: true, // enable dragging points
-  onClick: pointIndex => { console.log('Clicked point index: ', pointIndex) },
+  onClick: (pointIndex) => { console.log('Clicked point index: ', pointIndex) },
   /* ... */
 }
 
@@ -78,7 +83,7 @@ Cosmos.gl v2.0 introduces significant improvements in performance and data handl
 - Methods like `setPointPositions` and `setLinks` replace `setData` for improved efficiency.
 - Direct control over point and link attributes via Float32Array (e.g., colors, sizes, widths).
 - Updated event handling based on indices instead of objects.
-- New Clustering Feature (`setPointClusters`, `setClusterPositions` and `setPointClusterStrength`).
+- New Point Clustering force (`setPointClusters`, `setClusterPositions` and `setPointClusterStrength`).
 - Ability to drag points.
 
 Check the [Migration Guide](./cosmos-2-0-migration-notes.md) for details.
@@ -87,7 +92,7 @@ Check the [Migration Guide](./cosmos-2-0-migration-notes.md) for details.
 
 ### Examples
 
-- [Basic Set-Up](https://cosmosgl.github.io/cosmos/?path=/story/examples-beginners--basic-set-up)
+- [Basic Set-Up](https://cosmosgl.github.io/graph/?path=/story/examples-beginners--basic-set-up)
 
 ---
 
@@ -101,14 +106,16 @@ Check the [Migration Guide](./cosmos-2-0-migration-notes.md) for details.
 
 ### Known Issues
 
-- Starting from version 15.4, iOS has stopped supporting the key WebGL extension powering our Many-Body force implementation (`EXT_float_blend`). We're investigating this issue and exploring solutions.
+- ~~Starting from version 15.4, iOS has stopped supporting the key WebGL extension powering our Many-Body force implementation (`EXT_float_blend`). We're investigating this issue and exploring solutions.~~ The latest iOS works again!
+- Cosmos.gl doesn't work on some Android devices.
+
 
 ---
 
 ### Documentation
-- 🧑‍💻 [Quick Start](https://cosmosgl.github.io/cosmos/?path=/docs/welcome-to-cosmos--docs)
-- 🛠 [Configuration](https://cosmosgl.github.io/cosmos/?path=/docs/configuration--docs)
-- ⚙️ [API Reference](https://cosmosgl.github.io/cosmos/?path=/docs/api-reference--docs)
+- 🧑‍💻 [Quick Start](https://cosmosgl.github.io/graph/?path=/docs/welcome-to-cosmos--docs)
+- 🛠 [Configuration](https://cosmosgl.github.io/graph/?path=/docs/configuration--docs)
+- ⚙️ [API Reference](https://cosmosgl.github.io/graph/?path=/docs/api-reference--docs)
 - 🚀 [Migration Guide](./cosmos-2-0-migration-notes.md)
 
 ---

@@ -41,7 +41,7 @@ export default defineConfig(() => {
     resolve: {
       alias: {
         '@/graph': resolve(__dirname, 'src/'),
-        '@cosmograph/cosmos': resolve(__dirname, 'src/'),
+        '@cosmos.gl/graph': resolve(__dirname, 'src/'),
       },
     },
   }
