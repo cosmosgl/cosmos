@@ -116,7 +116,7 @@ Check the [Migration Guide](./cosmos-2-0-migration-notes.md) for details.
 - 🧑‍💻 [Quick Start](https://cosmosgl.github.io/graph/?path=/docs/welcome-to-cosmos--docs)
 - 🛠 [Configuration](https://cosmosgl.github.io/graph/?path=/docs/configuration--docs)
 - ⚙️ [API Reference](https://cosmosgl.github.io/graph/?path=/docs/api-reference--docs)
-- 🚀 [Migration Guide](./cosmos-2-0-migration-notes.md)
+- 🚀 [Migration Guide](https://github.com/cosmosgl/graph/blob/main/cosmos-2-0-migration-notes.md)
 
 ---
 
