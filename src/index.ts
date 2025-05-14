@@ -21,27 +21,28 @@ import { Store, ALPHA_MIN, MAX_POINT_SIZE, type Hovered } from '@/graph/modules/
 import { Zoom } from '@/graph/modules/Zoom'
 import { Drag } from '@/graph/modules/Drag'
 import { defaultConfigValues, defaultScaleToZoom } from '@/graph/variables'
+import { createWebGLErrorMessage } from './graph/utils/error-message'
 
 export class Graph {
   public config = new GraphConfig()
   public graph = new GraphData(this.config)
   private canvas: HTMLCanvasElement
   private attributionDivElement: HTMLElement | undefined
-  private canvasD3Selection: Selection<HTMLCanvasElement, undefined, null, undefined>
-  private reglInstance: regl.Regl
+  private canvasD3Selection: Selection<HTMLCanvasElement, undefined, null, undefined> | undefined
+  private reglInstance: regl.Regl | undefined
   private requestAnimationFrameId = 0
   private isRightClickMouse = false
 
   private store = new Store()
-  private points: Points
-  private lines: Lines
+  private points: Points | undefined
+  private lines: Lines | undefined
   private forceGravity: ForceGravity | undefined
   private forceCenter: ForceCenter | undefined
   private forceManyBody: ForceManyBody | ForceManyBodyQuadtree | undefined
   private forceLinkIncoming: ForceLink | undefined
   private forceLinkOutgoing: ForceLink | undefined
   private forceMouse: ForceMouse | undefined
-  private clusters: Clusters
+  private clusters: Clusters | undefined
   private zoomInstance = new Zoom(this.store, this.config)
   private dragInstance = new Drag(this.store, this.config)
 
@@ -93,14 +94,23 @@ export class Graph {
     canvas.height = h * this.config.pixelRatio
 
     this.canvas = canvas
-    this.reglInstance = regl({
-      canvas: this.canvas,
-      attributes: {
-        antialias: false,
-        preserveDrawingBuffer: true,
-      },
-      extensions: ['OES_texture_float', 'ANGLE_instanced_arrays'],
-    })
+
+    let reglInstance: regl.Regl | undefined
+    try {
+      reglInstance = regl({
+        canvas: this.canvas,
+        attributes: {
+          antialias: false,
+          preserveDrawingBuffer: true,
+        },
+        extensions: ['OES_texture_float', 'ANGLE_instanced_arrays'],
+      })
+    } catch (e) {
+      createWebGLErrorMessage(this.store.div)
+      this._isDestroyed = true
+      return
+    }
+    this.reglInstance = reglInstance
 
     this.store.adjustSpaceSize(this.config.spaceSize, this.reglInstance.limits.maxTextureSize)
     this.store.updateScreenSize(w, h)
@@ -207,7 +217,7 @@ export class Graph {
    * @param config Cosmos configuration object.
    */
   public setConfig (config: Partial<GraphConfigInterface>): void {
-    if (this._isDestroyed) return
+    if (this._isDestroyed || !this.reglInstance || !this.points || !this.lines || !this.clusters) return
     const prevConfig = { ...this.config }
     this.config.init(config)
     if (prevConfig.pointColor !== this.config.pointColor) {
@@ -278,7 +288,7 @@ export class Graph {
    *   - `false` or `undefined` (default): Use the behavior defined by `config.rescalePositions`.
    */
   public setPointPositions (pointPositions: Float32Array, dontRescale?: boolean | undefined): void {
-    if (this._isDestroyed) return
+    if (this._isDestroyed || !this.points) return
     this.graph.inputPointPositions = pointPositions
     this.points.dontRescale = dontRescale
     this._needsPointPositionsUpdate = true
@@ -447,7 +457,7 @@ export class Graph {
    * the more initial energy the simulation will get. Zero value stops the simulation.
    */
   public render (simulationAlpha?: number): void {
-    if (this._isDestroyed) return
+    if (this._isDestroyed || !this.reglInstance) return
     this.graph.update()
     const { fitViewOnInit, fitViewDelay, fitViewPadding, fitViewDuration, fitViewByPointsInRect, initialZoomLevel } = this.config
     if (!this.graph.pointsNumber && !this.graph.linksNumber) {
@@ -481,7 +491,7 @@ export class Graph {
    * @param canZoomOut Set to `false` to prevent zooming out from the point (`true` by default).
    */
   public zoomToPointByIndex (index: number, duration = 700, scale = defaultScaleToZoom, canZoomOut = true): void {
-    if (this._isDestroyed) return
+    if (this._isDestroyed || !this.reglInstance || !this.points || !this.canvasD3Selection) return
     const { store: { screenSize } } = this
     const positionPixels = readPixels(this.reglInstance, this.points.currentPositionFbo as regl.Framebuffer2D)
     if (index === undefined) return
@@ -524,7 +534,7 @@ export class Graph {
    * @param duration Duration of the zoom in/out transition.
    */
   public setZoomLevel (value: number, duration = 0): void {
-    if (this._isDestroyed) return
+    if (this._isDestroyed || !this.canvasD3Selection) return
     if (duration === 0) {
       this.canvasD3Selection
         .call(this.zoomInstance.behavior.scaleTo, value)
@@ -550,7 +560,7 @@ export class Graph {
    * @returns Array of point positions.
    */
   public getPointPositions (): number[] {
-    if (this._isDestroyed) return []
+    if (this._isDestroyed || !this.reglInstance || !this.points) return []
     if (this.graph.pointsNumber === undefined) return []
     const positions: number[] = []
     const pointPositionsPixels = readPixels(this.reglInstance, this.points.currentPositionFbo as regl.Framebuffer2D)
@@ -571,7 +581,7 @@ export class Graph {
    * @returns Array of point cluster.
    */
   public getClusterPositions (): number[] {
-    if (this._isDestroyed) return []
+    if (this._isDestroyed || !this.reglInstance || !this.clusters) return []
     if (this.graph.pointClusters === undefined || this.clusters.clusterCount === undefined) return []
     this.clusters.calculateCentermass()
     const positions: number[] = []
@@ -633,7 +643,7 @@ export class Graph {
    * @returns A Float32Array containing the indices of points inside a rectangular area.
    */
   public getPointsInRange (selection: [[number, number], [number, number]]): Float32Array {
-    if (this._isDestroyed) return new Float32Array()
+    if (this._isDestroyed || !this.reglInstance || !this.points) return new Float32Array()
     const h = this.store.screenSize[1]
     this.store.selectedArea = [[selection[0][0], (h - selection[1][1])], [selection[1][0], (h - selection[0][1])]]
     this.points.findPointsOnAreaSelection()
@@ -652,7 +662,7 @@ export class Graph {
    * The `left` and `right` coordinates should be from 0 to the width of the canvas.
    * The `top` and `bottom` coordinates should be from 0 to the height of the canvas. */
   public selectPointsInRange (selection: [[number, number], [number, number]] | null): void {
-    if (this._isDestroyed) return
+    if (this._isDestroyed || !this.reglInstance || !this.points) return
     if (selection) {
       const h = this.store.screenSize[1]
       this.store.selectedArea = [[selection[0][0], (h - selection[1][1])], [selection[1][0], (h - selection[0][1])]]
@@ -688,7 +698,7 @@ export class Graph {
    * @param indices Array of points indices.
    */
   public selectPointsByIndices (indices?: (number | undefined)[] | null): void {
-    if (this._isDestroyed) return
+    if (this._isDestroyed || !this.points) return
     if (!indices) {
       this.store.selectedIndices = null
     } else if (indices.length === 0) {
@@ -704,7 +714,7 @@ export class Graph {
    * Unselect all points.
    */
   public unselectPoints (): void {
-    if (this._isDestroyed) return
+    if (this._isDestroyed || !this.points) return
     this.store.selectedIndices = null
     this.points.updateGreyoutStatus()
   }
@@ -793,7 +803,7 @@ export class Graph {
    * @param indices Array of points indices.
    */
   public trackPointPositionsByIndices (indices: number[]): void {
-    if (this._isDestroyed) return
+    if (this._isDestroyed || !this.points) return
     this.points.trackPointsByIndices(indices)
   }
 
@@ -802,7 +812,7 @@ export class Graph {
    * @returns A Map object where keys are the indices of the points and values are their corresponding X and Y coordinates in the [number, number] format.
    */
   public getTrackedPointPositionsMap (): Map<number, [number, number]> {
-    if (this._isDestroyed) return new Map()
+    if (this._isDestroyed || !this.points) return new Map()
     return this.points.getTrackedPositionsMap()
   }
 
@@ -813,7 +823,7 @@ export class Graph {
    * @returns A Map object where keys are the index of the points and values are their corresponding X and Y coordinates in the [number, number] format.
    */
   public getSampledPointPositionsMap (): Map<number, [number, number]> {
-    if (this._isDestroyed) return new Map()
+    if (this._isDestroyed || !this.points) return new Map()
     return this.points.getSampledPointPositionsMap()
   }
 
@@ -823,7 +833,7 @@ export class Graph {
    * This scale is automatically created when position rescaling is enabled.
    */
   public getScaleX (): ((x: number) => number) | undefined {
-    if (this._isDestroyed) return undefined
+    if (this._isDestroyed || !this.points) return undefined
     return this.points.scaleX
   }
 
@@ -833,7 +843,7 @@ export class Graph {
    * This scale is automatically created when position rescaling is enabled.
    */
   public getScaleY (): ((y: number) => number) | undefined {
-    if (this._isDestroyed) return undefined
+    if (this._isDestroyed || !this.points) return undefined
     return this.points.scaleY
   }
 
@@ -884,7 +894,7 @@ export class Graph {
    * Destroy this Cosmos instance.
    */
   public destroy (): void {
-    if (this._isDestroyed) return
+    if (this._isDestroyed || !this.reglInstance) return
     window.clearTimeout(this._fitViewOnInitTimeoutID)
     this.stopFrames()
     this.reglInstance.destroy()
@@ -904,7 +914,7 @@ export class Graph {
    * Updates and recreates the graph visualization based on pending changes.
    */
   public create (): void {
-    if (this._isDestroyed) return
+    if (this._isDestroyed || !this.points || !this.lines) return
     if (this._needsPointPositionsUpdate) this.points.updatePositions()
     if (this._needsPointColorUpdate) this.points.updateColor()
     if (this._needsPointSizeUpdate) this.points.updateSize()
@@ -970,6 +980,7 @@ export class Graph {
   }
 
   private initPrograms (): void {
+    if (this._isDestroyed || !this.points || !this.lines || !this.clusters) return
     this.points.initPrograms()
     this.lines.initPrograms()
     this.forceGravity?.initPrograms()
@@ -995,32 +1006,32 @@ export class Graph {
         if (this.isRightClickMouse) {
           if (!isSimulationRunning) this.start(0.1)
           this.forceMouse?.run()
-          this.points.updatePosition()
+          this.points?.updatePosition()
         }
         if ((isSimulationRunning && !(this.zoomInstance.isRunning && !this.config.enableSimulationDuringZoom))) {
           if (simulationGravity) {
             this.forceGravity?.run()
-            this.points.updatePosition()
+            this.points?.updatePosition()
           }
 
           if (simulationCenter) {
             this.forceCenter?.run()
-            this.points.updatePosition()
+            this.points?.updatePosition()
           }
 
           this.forceManyBody?.run()
-          this.points.updatePosition()
+          this.points?.updatePosition()
 
           if (this.store.linksTextureSize) {
             this.forceLinkIncoming?.run()
-            this.points.updatePosition()
+            this.points?.updatePosition()
             this.forceLinkOutgoing?.run()
-            this.points.updatePosition()
+            this.points?.updatePosition()
           }
 
           if (this.graph.pointClusters || this.graph.clusterPositions) {
-            this.clusters.run()
-            this.points.updatePosition()
+            this.clusters?.run()
+            this.points?.updatePosition()
           }
 
           this.store.alpha += this.store.addAlpha(this.config.simulationDecay ?? defaultConfigValues.simulation.decay)
@@ -1033,25 +1044,25 @@ export class Graph {
           )
         }
 
-        this.points.trackPoints()
+        this.points?.trackPoints()
       }
 
       // Clear canvas
-      this.reglInstance.clear({
+      this.reglInstance?.clear({
         color: this.store.backgroundColor,
         depth: 1,
         stencil: 0,
       })
 
       if (renderLinks && this.store.linksTextureSize) {
-        this.lines.draw()
+        this.lines?.draw()
       }
 
-      this.points.draw()
+      this.points?.draw()
       if (this.dragInstance.isActive) {
         // To prevent the dragged point from suddenly jumping, run the drag function twice
-        this.points.drag()
-        this.points.drag()
+        this.points?.drag()
+        this.points?.drag()
       }
       this.fpsMonitor?.end(now)
 
@@ -1116,10 +1127,10 @@ export class Graph {
       this.store.updateScreenSize(w, h)
       this.canvas.width = w * this.config.pixelRatio
       this.canvas.height = h * this.config.pixelRatio
-      this.reglInstance.poll()
+      this.reglInstance?.poll()
       this.canvasD3Selection
-        .call(this.zoomInstance.behavior.transform, this.zoomInstance.getTransform([centerPosition], k))
-      this.points.updateSampledPointsGrid()
+        ?.call(this.zoomInstance.behavior.transform, this.zoomInstance.getTransform([centerPosition], k))
+      this.points?.updateSampledPointsGrid()
     }
   }
 
@@ -1127,7 +1138,7 @@ export class Graph {
     this.resizeCanvas()
     const transform = this.zoomInstance.getTransform(this.pair(positions), scale, padding)
     this.canvasD3Selection
-      .transition()
+      ?.transition()
       .ease(easeQuadInOut)
       .duration(duration)
       .call(this.zoomInstance.behavior.transform, transform)
@@ -1135,24 +1146,24 @@ export class Graph {
 
   private updateZoomDragBehaviors (): void {
     if (this.config.enableDrag) {
-      this.canvasD3Selection.call(this.dragInstance.behavior)
+      this.canvasD3Selection?.call(this.dragInstance.behavior)
     } else {
       this.canvasD3Selection
-        .call(this.dragInstance.behavior)
+        ?.call(this.dragInstance.behavior)
         .on('.drag', null)
     }
 
     if (this.config.enableZoom) {
-      this.canvasD3Selection.call(this.zoomInstance.behavior)
+      this.canvasD3Selection?.call(this.zoomInstance.behavior)
     } else {
       this.canvasD3Selection
-        .call(this.zoomInstance.behavior)
+        ?.call(this.zoomInstance.behavior)
         .on('wheel.zoom', null)
     }
   }
 
   private findHoveredPoint (): void {
-    if (!this._isMouseOnCanvas) return
+    if (!this._isMouseOnCanvas || !this.reglInstance || !this.points) return
     if (this._findHoveredPointExecutionCount < 2) {
       this._findHoveredPointExecutionCount += 1
       return
@@ -1205,7 +1216,7 @@ export class Graph {
       position: absolute;
       bottom: 0;
       right: 0;
-      color: var(--cosmos-attribution-color);
+      color: var(--cosmosgl-attribution-color);
       margin: 0 0.6rem 0.6rem 0;
       font-size: 0.7rem;
       font-family: inherit;
