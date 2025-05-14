@@ -45,7 +45,8 @@ export class Store {
   public set backgroundColor (color: [number, number, number, number]) {
     this._backgroundColor = color
     const brightness = rgbToBrightness(color[0], color[1], color[2])
-    document.documentElement.style.setProperty('--cosmos-attribution-color', brightness > 0.65 ? 'black' : 'white')
+    document.documentElement.style.setProperty('--cosmosgl-attribution-color', brightness > 0.65 ? 'black' : 'white')
+    document.documentElement.style.setProperty('--cosmosgl-error-message-color', brightness > 0.65 ? 'black' : 'white')
     if (this.div) this.div.style.backgroundColor = `rgba(${color[0] * 255}, ${color[1] * 255}, ${color[2] * 255}, ${color[3]})`
   }
 
