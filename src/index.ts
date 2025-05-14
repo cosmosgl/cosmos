@@ -742,23 +742,6 @@ export class Graph {
   }
 
   /**
-   * Set focus on a point by index. A ring will be highlighted around the focused point.
-   * If no index is specified, the focus will be reset.
-   * If `focusedPointIndex` is specified in the config, this method will have no effect.
-   * @param index The index of the point in the array of points.
-   */
-  public setFocusedPointByIndex (index?: number): void {
-    if (this._isDestroyed) return
-    // Config `focusedPointIndex` parameter has higher priority than this method.
-    if (this.config.focusedPointIndex !== undefined) return
-    if (index === undefined) {
-      this.store.setFocusedPoint()
-    } else {
-      this.store.setFocusedPoint(index)
-    }
-  }
-
-  /**
    * Converts the X and Y point coordinates from the space coordinate system to the screen coordinate system.
    * @param spacePosition Array of x and y coordinates in the space coordinate system.
    * @returns Array of x and y coordinates in the screen coordinate system.
@@ -974,7 +957,6 @@ export class Graph {
     this.store.linksTextureSize = Math.ceil(Math.sqrt((graph.linksNumber ?? 0) * 2))
     this.create()
     this.initPrograms()
-    this.store.setFocusedPoint(this.config.focusedPointIndex)
     this.store.hoveredPoint = undefined
     this.start(simulationAlpha)
   }
