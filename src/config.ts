@@ -87,7 +87,6 @@ export interface GraphConfigInterface {
 
   /**
    * Set focus on a point by index.  A ring will be highlighted around the focused point.
-   * Has priority over the `setFocusedPointByIndex` method.
    * When set to `undefined`, no point is focused.
    * Default value: `undefined`
    */
