@@ -32,6 +32,10 @@ export class Store {
 
   public hoveredPointRingColor = [1, 1, 1, hoveredPointRingOpacity]
   public focusedPointRingColor = [1, 1, 1, focusedPointRingOpacity]
+  // -1 means that the color is not set
+  public greyoutPointColor = [-1, -1, -1, -1]
+  // If backgroundColor is dark, darkenGreyout is true
+  public darkenGreyout = false
   private alphaTarget = 0
   private scalePointX = scaleLinear()
   private scalePointY = scaleLinear()
@@ -48,6 +52,8 @@ export class Store {
     document.documentElement.style.setProperty('--cosmosgl-attribution-color', brightness > 0.65 ? 'black' : 'white')
     document.documentElement.style.setProperty('--cosmosgl-error-message-color', brightness > 0.65 ? 'black' : 'white')
     if (this.div) this.div.style.backgroundColor = `rgba(${color[0] * 255}, ${color[1] * 255}, ${color[2] * 255}, ${color[3]})`
+
+    this.darkenGreyout = brightness < 0.65
   }
 
   public addRandomSeed (seed: number | string): void {
@@ -100,6 +106,18 @@ export class Store {
     this.focusedPointRingColor[0] = convertedRgba[0]
     this.focusedPointRingColor[1] = convertedRgba[1]
     this.focusedPointRingColor[2] = convertedRgba[2]
+  }
+
+  public setGreyoutPointColor (color: string | [number, number, number, number] | undefined): void {
+    if (color === undefined) {
+      this.greyoutPointColor = [-1, -1, -1, -1]
+      return
+    }
+    const convertedRgba = getRgbaColor(color)
+    this.greyoutPointColor[0] = convertedRgba[0]
+    this.greyoutPointColor[1] = convertedRgba[1]
+    this.greyoutPointColor[2] = convertedRgba[2]
+    this.greyoutPointColor[3] = convertedRgba[3]
   }
 
   public setFocusedPoint (index?: number): void {

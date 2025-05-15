@@ -1,5 +1,6 @@
 export const defaultPointColor = '#b3b3b3'
-export const defaultGreyoutPointOpacity = 0.1
+export const defaultGreyoutPointOpacity = undefined
+export const defaultGreyoutPointColor = undefined
 export const defaultPointSize = 4
 export const defaultLinkColor = '#666666'
 export const defaultGreyoutLinkOpacity = 0.1
