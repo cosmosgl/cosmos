@@ -181,6 +181,9 @@ export class Graph {
     if (this.config.focusedPointIndex !== undefined) {
       this.store.setFocusedPoint(this.config.focusedPointIndex)
     }
+    if (this.config.pointGreyoutColor) {
+      this.store.setGreyoutPointColor(this.config.pointGreyoutColor)
+    }
 
     if (this.config.showFPSMonitor) this.fpsMonitor = new FPSMonitor(this.canvas)
 
@@ -250,6 +253,9 @@ export class Graph {
     }
     if (prevConfig.focusedPointRingColor !== this.config.focusedPointRingColor) {
       this.store.setFocusedPointRingColor(this.config.focusedPointRingColor)
+    }
+    if (prevConfig.pointGreyoutColor !== this.config.pointGreyoutColor) {
+      this.store.setGreyoutPointColor(this.config.pointGreyoutColor)
     }
     if (prevConfig.focusedPointIndex !== this.config.focusedPointIndex) {
       this.store.setFocusedPoint(this.config.focusedPointIndex)

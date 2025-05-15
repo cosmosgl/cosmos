@@ -15,9 +15,12 @@ uniform float pointIndex;
 uniform float maxPointSize;
 uniform vec4 color;
 uniform float greyoutOpacity;
-
+uniform bool darkenGreyout;
+uniform vec4 backgroundColor;
+uniform vec4 greyoutColor;
 varying vec2 vertexPosition;
 varying float pointOpacity;
+varying vec3 rgbColor;
 
 float calculatePointSize(float size) {
   float pSize;
@@ -37,11 +40,29 @@ void main () {
   vec2 textureCoordinates = vec2(mod(pointIndex, pointsTextureSize), floor(pointIndex / pointsTextureSize)) + 0.5;
   vec4 pointPosition = texture2D(positionsTexture, textureCoordinates / pointsTextureSize);
 
-  // Calculate point opacity
+  rgbColor = color.rgb;
   pointOpacity = color.a;
   vec4 greyoutStatus = texture2D(pointGreyoutStatusTexture, textureCoordinates / pointsTextureSize);
   if (greyoutStatus.r > 0.0) {
-    pointOpacity *= greyoutOpacity;
+    if (greyoutColor[0] != -1.0) {
+      rgbColor = greyoutColor.rgb;
+      pointOpacity = greyoutColor.a;
+    } else {
+      // If greyoutColor is not set, make color lighter or darker based on darkenGreyout
+      float blendFactor = 0.65; // Controls how much to modify (0.0 = original, 1.0 = target color)
+      
+      if (darkenGreyout) {
+        // Darken the color
+        rgbColor = mix(rgbColor, vec3(0.2), blendFactor);
+      } else {
+        // Lighten the color
+        rgbColor = mix(rgbColor, max(backgroundColor.rgb, vec3(0.8)), blendFactor);
+      }
+    }
+
+    if (greyoutOpacity != -1.0) {
+      pointOpacity *= greyoutOpacity;
+    }
   }
 
   // Calculate point radius

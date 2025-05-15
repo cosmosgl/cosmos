@@ -24,7 +24,6 @@ export const basicSetUp = (): { graph: Graph; div: HTMLDivElement} => {
     backgroundColor: '#2d313a',
     pointSize: 4,
     pointColor: '#4B5BBF',
-    pointGreyoutOpacity: 0.1,
     linkWidth: 0.1,
     linkColor: '#5F74C2',
     linkArrows: false,

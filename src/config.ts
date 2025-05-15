@@ -3,6 +3,7 @@ import { D3DragEvent } from 'd3-drag'
 import {
   defaultPointColor,
   defaultGreyoutPointOpacity,
+  defaultGreyoutPointColor,
   defaultPointSize,
   defaultLinkColor,
   defaultGreyoutLinkOpacity,
@@ -43,10 +44,30 @@ export interface GraphConfigInterface {
   pointColor?: string | [number, number, number, number];
 
   /**
-   * Greyed out point opacity value when the selection is active.
-   * Default value: `0.1`
-  */
+   * The color to use for points when they are greyed out (when selection is active).
+   * This can be either a hex color string (e.g., '#b3b3b3') or an array of RGBA values
+   * in the format `[red, green, blue, alpha]` where each value is a number between 0 and 255.
+   *
+   * If not provided, the color will be the same as the `pointColor`,
+   * but darkened or lightened depending on the background color.
+   *
+   * If `pointGreyoutOpacity` is also defined, it will override the alpha/opacity component
+   * of this color.
+   *
+   * Default value: `undefined`
+   */
+  pointGreyoutColor?: string | [number, number, number, number];
+
+  /**
+   * Opacity value for points when they are greyed out (when selection is active).
+   * Values range from 0 (completely transparent) to 1 (fully opaque).
+   *
+   * If defined, this value will override the alpha/opacity component of `pointGreyoutColor`.
+   *
+   * Default value: `undefined`
+   */
   pointGreyoutOpacity?: number;
+
   /**
    * The default size value to use for points when no point sizes are provided or
    * if the size value in the array is `undefined` or `null`.
@@ -482,6 +503,7 @@ export class GraphConfig implements GraphConfigInterface {
   public spaceSize = defaultConfigValues.spaceSize
   public pointColor = defaultPointColor
   public pointGreyoutOpacity = defaultGreyoutPointOpacity
+  public pointGreyoutColor = defaultGreyoutPointColor
   public pointSize = defaultPointSize
   public pointSizeScale = defaultConfigValues.pointSizeScale
   public hoveredPointCursor = defaultConfigValues.hoveredPointCursor
