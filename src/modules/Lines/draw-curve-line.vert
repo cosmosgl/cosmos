@@ -1,8 +1,10 @@
 precision highp float;
+
 attribute vec2 position, pointA, pointB;
 attribute vec4 color;
 attribute float width;
 attribute float arrow;
+
 uniform sampler2D positionsTexture;
 uniform sampler2D pointGreyoutStatus;
 uniform mat3 transformationMatrix;
@@ -11,20 +13,20 @@ uniform float widthScale;
 uniform float arrowSizeScale;
 uniform float spaceSize;
 uniform vec2 screenSize;
-uniform float ratio;
 uniform vec2 linkVisibilityDistanceRange;
 uniform float linkVisibilityMinTransparency;
 uniform float greyoutOpacity;
 uniform float curvedWeight;
 uniform float curvedLinkControlPointDistance;
 uniform float curvedLinkSegments;
+uniform bool scaleLinksOnZoom;
+uniform float maxPointSize;
 
 varying vec4 rgbaColor;
 varying vec2 pos;
 varying float arrowLength;
-varying float linkWidthArrowWidthRatio;
-varying float smoothWidthRatio;
 varying float useArrow;
+varying float smoothing;
 
 float map(float value, float min1, float max1, float min2, float max2) {
   return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
@@ -36,19 +38,48 @@ vec2 conicParametricCurve(vec2 A, vec2 B, vec2 ControlPoint, float t, float w) {
   return divident / divisor;
 }
 
+float calculateLinkWidth(float width) {
+  float linkWidth;
+  if (scaleLinksOnZoom) {
+    // Use original width if links should scale with zoom
+    linkWidth = width;
+  } else {
+    // Adjust width based on zoom level to maintain visual size
+    linkWidth = width / transformationMatrix[0][0];
+    // Apply a non-linear scaling to avoid extreme widths
+    linkWidth *= min(5.0, max(1.0, transformationMatrix[0][0] * 0.01));
+  }
+  // Limit link width based on whether it has an arrow
+  if (useArrow > 0.5) {
+    return min(linkWidth, (maxPointSize * 2.0) / transformationMatrix[0][0]);
+  } else {
+    return min(linkWidth, maxPointSize / transformationMatrix[0][0]);
+  }
+}
+
+float calculateArrowWidth(float arrowWidth) {
+  if (scaleLinksOnZoom) {
+    return arrowWidth;
+  } else {
+    return arrowWidth / transformationMatrix[0][0];
+  }
+}
+
 void main() {
   pos = position;
 
   vec2 pointTexturePosA = (pointA + 0.5) / pointsTextureSize;
   vec2 pointTexturePosB = (pointB + 0.5) / pointsTextureSize;
-  // Greyed out status of points
+  
   vec4 greyoutStatusA = texture2D(pointGreyoutStatus, pointTexturePosA);
   vec4 greyoutStatusB = texture2D(pointGreyoutStatus, pointTexturePosB);
-  // Position
+  
   vec4 pointPositionA = texture2D(positionsTexture, pointTexturePosA);
   vec4 pointPositionB = texture2D(positionsTexture, pointTexturePosB);
   vec2 a = pointPositionA.xy;
   vec2 b = pointPositionB.xy;
+  
+  // Calculate direction vector and its perpendicular
   vec2 xBasis = b - a;
   vec2 yBasis = normalize(vec2(-xBasis.y, xBasis.x));
 
@@ -57,50 +88,69 @@ void main() {
   float h = curvedLinkControlPointDistance;
   vec2 controlPoint = (a + b) / 2.0 + yBasis * linkDist * h;
 
+  // Convert link distance to screen pixels
   float linkDistPx = linkDist * transformationMatrix[0][0];
   
+  // Calculate line width using the width scale
   float linkWidth = width * widthScale;
   float k = 2.0;
+  // Arrow width is proportionally larger than the line width
   float arrowWidth = max(5.0, linkWidth * k);
   arrowWidth *= arrowSizeScale;
 
-  float arrowWidthPx = arrowWidth / transformationMatrix[0][0];
+  // Calculate arrow width in pixels
+  float arrowWidthPx = calculateArrowWidth(arrowWidth);
+
+  // Calculate arrow length proportional to its width
+  // 0.866 is approximately sqrt(3)/2 - related to equilateral triangle geometry
+  // Cap the length to avoid overly long arrows on short links
   arrowLength = min(0.3, (0.866 * arrowWidthPx * 2.0) / linkDist);
 
-  float smoothWidth = 2.0;
-  float arrowExtraWidth = arrowWidth - linkWidth;
-  linkWidth += smoothWidth / 2.0;
   useArrow = arrow;
   if (useArrow > 0.5) {
-    linkWidth += arrowExtraWidth;
+    linkWidth *= 2.0;
   }
-  smoothWidthRatio = smoothWidth / linkWidth;
-  linkWidthArrowWidthRatio = arrowExtraWidth / linkWidth;
 
-  float linkWidthPx = linkWidth / transformationMatrix[0][0];
+  // Calculate final link width in pixels with smoothing
+  float linkWidthPx = calculateLinkWidth(linkWidth);
+  float smoothingPx = 0.5 / transformationMatrix[0][0];
+  smoothing = smoothingPx / linkWidthPx;
+  linkWidthPx += smoothingPx;
 
-  // Color
+  // Calculate final color with opacity based on link distance
   vec3 rgbColor = color.rgb;
+  // Adjust opacity based on link distance
   float opacity = color.a * max(linkVisibilityMinTransparency, map(linkDistPx, linkVisibilityDistanceRange.g, linkVisibilityDistanceRange.r, 0.0, 1.0));
 
+  // Apply greyed out opacity if either endpoint is greyed out
   if (greyoutStatusA.r > 0.0 || greyoutStatusB.r > 0.0) {
     opacity *= greyoutOpacity;
   }
 
+  // Pass final color to fragment shader
   rgbaColor = vec4(rgbColor, opacity);
 
+  // Calculate position on the curved path
   float t = position.x;
   float w = curvedWeight;
+  
   float tPrev = t - 1.0 / curvedLinkSegments;
   float tNext = t + 1.0 / curvedLinkSegments;
+  
   vec2 pointCurr = conicParametricCurve(a, b, controlPoint, t, w);
+  
   vec2 pointPrev = conicParametricCurve(a, b, controlPoint, max(0.0, tPrev), w);
   vec2 pointNext = conicParametricCurve(a, b, controlPoint, min(tNext, 1.0), w);
+  
   vec2 xBasisCurved = pointNext - pointPrev;
   vec2 yBasisCurved = normalize(vec2(-xBasisCurved.y, xBasisCurved.x));
+  
   pointCurr += yBasisCurved * linkWidthPx * position.y;
+  
+  // Transform to clip space coordinates
   vec2 p = 2.0 * pointCurr / spaceSize - 1.0;
   p *= spaceSize / screenSize;
-  vec3 final =  transformationMatrix * vec3(p, 1);
+  vec3 final = transformationMatrix * vec3(p, 1);
+  
   gl_Position = vec4(final.rg, 0, 1);
 }

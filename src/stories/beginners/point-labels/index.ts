@@ -30,7 +30,8 @@ export const pointLabels = (
   const graph = new Graph(graphDiv, {
     spaceSize: 4096,
     backgroundColor: '#2d313a',
-    linkWidth: 0.1,
+    scalePointsOnZoom: true,
+    linkWidth: 0.6,
     linkColor: '#5F74C2',
     linkArrows: false,
     fitViewOnInit: false,

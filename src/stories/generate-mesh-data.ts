@@ -104,7 +104,7 @@ export function generateMeshData (
     linkColors[i * 4 + 2] = rgba[2]
     linkColors[i * 4 + 3] = 0.9
 
-    linkWidths[i] = getRandom(0.1, 0.5)
+    linkWidths[i] = getRandom(0.4, 0.8)
     // linkStrength[i] = (n * m - sourcePointIndex) / (n * m)
   }
 
