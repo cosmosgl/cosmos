@@ -144,6 +144,11 @@ export interface GraphConfigInterface {
    */
   linkWidthScale?: number;
   /**
+   * Increase or decrease the size of the links when zooming in or out.
+   * Default value: `false`
+   */
+  scaleLinksOnZoom?: boolean;
+  /**
    * If set to true, links are rendered as curved lines.
    * Otherwise as straight lines.
    * Default value: `false`
@@ -405,7 +410,7 @@ export interface GraphConfigInterface {
   pixelRatio?: number;
   /**
    * Increase or decrease the size of the points when zooming in or out.
-   * Default value: true
+   * Default value: `false`
    */
   scalePointsOnZoom?: boolean;
   /**
@@ -522,6 +527,7 @@ export class GraphConfig implements GraphConfigInterface {
   public curvedLinkControlPointDistance = defaultConfigValues.curvedLinkControlPointDistance
   public linkArrows = defaultConfigValues.arrowLinks
   public linkArrowsSizeScale = defaultConfigValues.arrowSizeScale
+  public scaleLinksOnZoom = defaultConfigValues.scaleLinksOnZoom
   public linkVisibilityDistanceRange = defaultConfigValues.linkVisibilityDistanceRange
   public linkVisibilityMinTransparency = defaultConfigValues.linkVisibilityMinTransparency
   public useClassicQuadtree = defaultConfigValues.useClassicQuadtree

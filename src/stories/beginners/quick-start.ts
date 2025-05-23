@@ -9,6 +9,7 @@ export const quickStart = (): { graph: Graph; div: HTMLDivElement} => {
     spaceSize: 4096,
     backgroundColor: '#2d313a',
     pointColor: '#F069B4',
+    scalePointsOnZoom: true,
     simulationFriction: 0.1, // keeps the graph inert
     simulationGravity: 0, // disables gravity
     simulationRepulsion: 0.5, // increases repulsion between points

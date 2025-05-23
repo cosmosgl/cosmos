@@ -24,6 +24,7 @@ import { Meta } from "@storybook/blocks";
 | linkGreyoutOpacity | Greyed out link opacity value when the selection is active | `0.1` |
 | linkWidth | The default width value to use for links when no link widths are provided or if the width value in the array is `undefined` or `null` | `1` |
 | linkWidthScale | Scale factor for the link width | `1` |
+| scaleLinksOnZoom | Increase/decrease link width when zooming | `false` |
 | curvedLinks | If set to true, links are rendered as curved lines. Otherwise as straight lines | `false` |
 | curvedLinkSegments | Number of segments in a curved line | `19` |
 | curvedLinkWeight | Weight affects the shape of the curve | `0.8` |
@@ -35,7 +36,7 @@ import { Meta } from "@storybook/blocks";
 | useClassicQuadtree | Use the classic [quadtree algorithm](https://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation) for the Many-Body force. This property will be applied only on component initialization and it can't be changed using the `setConfig` method.<br /><br /> ⚠ The algorithm might not work on some GPUs (e.g. Nvidia) and on Windows (unless you disable ANGLE in the browser settings). | `false` |
 | showFPSMonitor | Show WebGL performance monitor | `false` |
 | pixelRatio | Canvas pixel ratio | `2` |
-| scalePointsOnZoom | Increase/decrease point size when zooming | `true` |
+| scalePointsOnZoom | Increase/decrease point size when zooming | `false` |
 | initialZoomLevel | Initial zoom level (set once during initialization) | `undefined` |
 | enableZoom | Enables zooming interactions | `true` |
 | enableSimulationDuringZoom | Keep simulation running during zoom operations | `false` |
