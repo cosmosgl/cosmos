@@ -55,6 +55,7 @@ export const defaultConfigValues = {
   pointSamplingDistance: 150,
   attribution: '',
   rescalePositions: undefined,
+  enableRightClickRepulsion: false,
 }
 
 export const hoveredPointRingOpacity = 0.7

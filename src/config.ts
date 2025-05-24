@@ -258,6 +258,13 @@ export interface GraphConfigInterface {
    */
   simulationRepulsionFromMouse?: number;
   /**
+   * Enable or disable the repulsion force from mouse when right-clicking.
+   * When set to `true`, holding the right mouse button will activate the mouse repulsion force.
+   * When set to `false`, right-clicking will not trigger any repulsion force.
+   * Default value: `false`
+   */
+  enableRightClickRepulsion?: boolean;
+  /**
    * Friction coefficient.
    * Values range from 0 (high friction, stops quickly) to 1 (no friction, keeps moving).
    * Default value: `0.85`
@@ -542,6 +549,7 @@ export class GraphConfig implements GraphConfigInterface {
   public simulationLinkDistance = defaultConfigValues.simulation.linkDistance
   public simulationLinkDistRandomVariationRange = defaultConfigValues.simulation.linkDistRandomVariationRange
   public simulationRepulsionFromMouse = defaultConfigValues.simulation.repulsionFromMouse
+  public enableRightClickRepulsion = defaultConfigValues.enableRightClickRepulsion
   public simulationFriction = defaultConfigValues.simulation.friction
   public simulationCluster = defaultConfigValues.simulation.cluster
 
