@@ -991,8 +991,7 @@ export class Graph {
       if (!this.dragInstance.isActive) this.findHoveredPoint()
 
       if (enableSimulation) {
-        if (this.isRightClickMouse) {
-          if (!isSimulationRunning) this.start(0.1)
+        if (this.isRightClickMouse && this.config.enableRightClickRepulsion) {
           this.forceMouse?.run()
           this.points?.updatePosition()
         }
@@ -1023,7 +1022,7 @@ export class Graph {
           }
 
           this.store.alpha += this.store.addAlpha(this.config.simulationDecay ?? defaultConfigValues.simulation.decay)
-          if (this.isRightClickMouse) this.store.alpha = Math.max(this.store.alpha, 0.1)
+          if (this.isRightClickMouse && this.config.enableRightClickRepulsion) this.store.alpha = Math.max(this.store.alpha, 0.1)
           this.store.simulationProgress = Math.sqrt(Math.min(1, ALPHA_MIN / this.store.alpha))
           this.config.onSimulationTick?.(
             this.store.alpha,
