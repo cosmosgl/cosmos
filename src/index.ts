@@ -886,6 +886,39 @@ export class Graph {
     if (this._isDestroyed || !this.reglInstance) return
     window.clearTimeout(this._fitViewOnInitTimeoutID)
     this.stopFrames()
+
+    // Remove all event listeners
+    if (this.canvasD3Selection) {
+      this.canvasD3Selection
+        .on('mouseenter.cosmos', null)
+        .on('mousemove.cosmos', null)
+        .on('mouseleave.cosmos', null)
+        .on('click', null)
+        .on('mousemove', null)
+        .on('contextmenu', null)
+        .on('.drag', null)
+        .on('.zoom', null)
+    }
+
+    select(document)
+      .on('keydown.cosmos', null)
+      .on('keyup.cosmos', null)
+
+    if (this.zoomInstance?.behavior) {
+      this.zoomInstance.behavior
+        .on('start.detect', null)
+        .on('zoom.detect', null)
+        .on('end.detect', null)
+    }
+
+    if (this.dragInstance?.behavior) {
+      this.dragInstance.behavior
+        .on('start.detect', null)
+        .on('drag.detect', null)
+        .on('end.detect', null)
+    }
+
+    this.fpsMonitor?.destroy()
     this.reglInstance.destroy()
     // Clears the canvas after particle system is destroyed
     this.reglInstance.clear({
@@ -893,9 +926,21 @@ export class Graph {
       depth: 1,
       stencil: 0,
     })
-    select(this.canvas).style('cursor', null)
-    this.fpsMonitor?.destroy()
+
+    if (this.canvas && this.canvas.parentNode) {
+      this.canvas.parentNode.removeChild(this.canvas)
+    }
+
+    if (this.attributionDivElement && this.attributionDivElement.parentNode) {
+      this.attributionDivElement.parentNode.removeChild(this.attributionDivElement)
+    }
+
     document.getElementById('gl-bench-style')?.remove()
+
+    this.canvasD3Selection = undefined
+    this.reglInstance = undefined
+    this.attributionDivElement = undefined
+
     this._isDestroyed = true
   }
 
