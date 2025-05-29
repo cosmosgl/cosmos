@@ -663,6 +663,31 @@ export class Graph {
       .filter(d => d !== -1)
   }
 
+  /**
+   * Get points indices inside a lasso (polygon) area.
+   * @param lassoPath - Array of points `[[x1, y1], [x2, y2], ..., [xn, yn]]` that defines the lasso polygon.
+   * The coordinates should be from 0 to the width/height of the canvas.
+   * @returns A Float32Array containing the indices of points inside the lasso area.
+   */
+  public getPointsInLasso (lassoPath: [number, number][]): Float32Array {
+    if (this._isDestroyed || !this.reglInstance || !this.points) return new Float32Array()
+    if (lassoPath.length < 3) return new Float32Array() // Need at least 3 points for a polygon
+
+    const h = this.store.screenSize[1]
+    // Convert coordinates to WebGL coordinate system (flip Y)
+    const convertedPath = lassoPath.map(([x, y]) => [x, h - y] as [number, number])
+    this.points.updateLassoPath(convertedPath)
+    this.points.findPointsOnLassoSelection()
+    const pixels = readPixels(this.reglInstance, this.points.selectedFbo as regl.Framebuffer2D)
+
+    return pixels
+      .map((pixel, i) => {
+        if (i % 4 === 0 && pixel !== 0) return i / 4
+        else return -1
+      })
+      .filter(d => d !== -1)
+  }
+
   /** Select points inside a rectangular area.
    * @param selection - Array of two corner points `[[left, top], [right, bottom]]`.
    * The `left` and `right` coordinates should be from 0 to the width of the canvas.
@@ -673,6 +698,36 @@ export class Graph {
       const h = this.store.screenSize[1]
       this.store.selectedArea = [[selection[0][0], (h - selection[1][1])], [selection[1][0], (h - selection[0][1])]]
       this.points.findPointsOnAreaSelection()
+      const pixels = readPixels(this.reglInstance, this.points.selectedFbo as regl.Framebuffer2D)
+      this.store.selectedIndices = pixels
+        .map((pixel, i) => {
+          if (i % 4 === 0 && pixel !== 0) return i / 4
+          else return -1
+        })
+        .filter(d => d !== -1)
+    } else {
+      this.store.selectedIndices = null
+    }
+    this.points.updateGreyoutStatus()
+  }
+
+  /** Select points inside a lasso (polygon) area.
+   * @param lassoPath - Array of points `[[x1, y1], [x2, y2], ..., [xn, yn]]` that defines the lasso polygon.
+   * The coordinates should be from 0 to the width/height of the canvas.
+   * Set to null to clear selection. */
+  public selectPointsInLasso (lassoPath: [number, number][] | null): void {
+    if (this._isDestroyed || !this.reglInstance || !this.points) return
+    if (lassoPath) {
+      if (lassoPath.length < 3) {
+        console.warn('Lasso path requires at least 3 points to form a polygon.')
+        return
+      }
+
+      const h = this.store.screenSize[1]
+      // Convert coordinates to WebGL coordinate system (flip Y)
+      const convertedPath = lassoPath.map(([x, y]) => [x, h - y] as [number, number])
+      this.points.updateLassoPath(convertedPath)
+      this.points.findPointsOnLassoSelection()
       const pixels = readPixels(this.reglInstance, this.points.selectedFbo as regl.Framebuffer2D)
       this.store.selectedIndices = pixels
         .map((pixel, i) => {
