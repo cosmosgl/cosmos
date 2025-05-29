@@ -1,0 +1,65 @@
+#ifdef GL_ES
+precision highp float;
+#endif
+
+uniform sampler2D positionsTexture;
+uniform sampler2D lassoPathTexture; // Texture containing lasso path points
+uniform int lassoPathLength;
+uniform float spaceSize;
+uniform vec2 screenSize;
+uniform mat3 transformationMatrix;
+
+varying vec2 textureCoords;
+
+// Get a point from the lasso path texture at a specific index
+vec2 getLassoPoint(sampler2D pathTexture, int index, int pathLength) {
+  if (index >= pathLength) return vec2(0.0);
+  
+  // Calculate texture coordinates for the index
+  int textureSize = int(ceil(sqrt(float(pathLength))));
+  int x = index - (index / textureSize) * textureSize;
+  int y = index / textureSize;
+  
+  vec2 texCoord = (vec2(float(x), float(y)) + 0.5) / float(textureSize);
+  vec4 pathData = texture2D(pathTexture, texCoord);
+  
+  return pathData.xy;
+}
+
+// Point-in-polygon algorithm using ray casting
+bool pointInPolygon(vec2 point, sampler2D pathTexture, int pathLength) {
+  bool inside = false;
+  
+  for (int i = 0; i < 2048; i++) {
+    if (i >= pathLength) break;
+    
+    int j = int(mod(float(i + 1), float(pathLength)));
+    
+    vec2 pi = getLassoPoint(pathTexture, i, pathLength);
+    vec2 pj = getLassoPoint(pathTexture, j, pathLength);
+    
+    if (((pi.y > point.y) != (pj.y > point.y)) &&
+        (point.x < (pj.x - pi.x) * (point.y - pi.y) / (pj.y - pi.y) + pi.x)) {
+      inside = !inside;
+    }
+  }
+  
+  return inside;
+}
+
+void main() {
+  vec4 pointPosition = texture2D(positionsTexture, textureCoords);
+  vec2 p = 2.0 * pointPosition.rg / spaceSize - 1.0;
+  p *= spaceSize / screenSize;
+  vec3 final = transformationMatrix * vec3(p, 1);
+
+  // Convert to screen coordinates for polygon check
+  vec2 screenPos = (final.xy + 1.0) * screenSize / 2.0;
+  
+  gl_FragColor = vec4(0.0, 0.0, pointPosition.rg);
+  
+  // Check if point center is inside the lasso polygon
+  if (pointInPolygon(screenPos, lassoPathTexture, lassoPathLength)) {
+    gl_FragColor.r = 1.0;
+  }
+} 

@@ -6,6 +6,7 @@ import { defaultConfigValues } from '@/graph/variables'
 import drawPointsFrag from '@/graph/modules/Points/draw-points.frag'
 import drawPointsVert from '@/graph/modules/Points/draw-points.vert'
 import findPointsOnAreaSelectionFrag from '@/graph/modules/Points/find-points-on-area-selection.frag'
+import findPointsOnLassoSelectionFrag from '@/graph/modules/Points/find-points-on-lasso-selection.frag'
 import drawHighlightedFrag from '@/graph/modules/Points/draw-highlighted.frag'
 import drawHighlightedVert from '@/graph/modules/Points/draw-highlighted.vert'
 import findHoveredPointFrag from '@/graph/modules/Points/find-hovered-point.frag'
@@ -41,6 +42,7 @@ export class Points extends CoreModule {
   private updatePositionCommand: regl.DrawCommand | undefined
   private dragPointCommand: regl.DrawCommand | undefined
   private findPointsOnAreaSelectionCommand: regl.DrawCommand | undefined
+  private findPointsOnLassoSelectionCommand: regl.DrawCommand | undefined
   private findHoveredPointCommand: regl.DrawCommand | undefined
   private clearHoveredFboCommand: regl.DrawCommand | undefined
   private clearSampledPointsFboCommand: regl.DrawCommand | undefined
@@ -51,6 +53,9 @@ export class Points extends CoreModule {
   private greyoutStatusTexture: regl.Texture2D | undefined
   private sizeTexture: regl.Texture2D | undefined
   private trackedIndicesTexture: regl.Texture2D | undefined
+  private lassoPathTexture: regl.Texture2D | undefined
+  private lassoPathFbo: regl.Framebuffer2D | undefined
+  private lassoPathLength = 0
   private drawPointIndices: regl.Buffer | undefined
   private hoveredPointIndices: regl.Buffer | undefined
   private sampledPointIndices: regl.Buffer | undefined
@@ -276,6 +281,27 @@ export class Points extends CoreModule {
           'selection[1]': () => store.selectedArea[1],
           scalePointsOnZoom: () => config.scalePointsOnZoom,
           maxPointSize: () => store.maxPointSize,
+        },
+      })
+    }
+
+    if (!this.findPointsOnLassoSelectionCommand) {
+      this.findPointsOnLassoSelectionCommand = reglInstance({
+        frag: findPointsOnLassoSelectionFrag,
+        vert: updateVert,
+        framebuffer: () => this.selectedFbo as regl.Framebuffer2D,
+        primitive: 'triangle strip',
+        count: 4,
+        attributes: {
+          vertexCoord: createQuadBuffer(reglInstance),
+        },
+        uniforms: {
+          positionsTexture: () => this.currentPositionFbo,
+          spaceSize: () => store.adjustedSpaceSize,
+          screenSize: () => store.screenSize,
+          transformationMatrix: () => store.transform,
+          lassoPathTexture: () => this.lassoPathTexture,
+          lassoPathLength: () => this.lassoPathLength,
         },
       })
     }
@@ -545,6 +571,49 @@ export class Points extends CoreModule {
 
   public findPointsOnAreaSelection (): void {
     this.findPointsOnAreaSelectionCommand?.()
+  }
+
+  public findPointsOnLassoSelection (): void {
+    this.findPointsOnLassoSelectionCommand?.()
+  }
+
+  public updateLassoPath (lassoPath: [number, number][]): void {
+    const { reglInstance } = this
+    this.lassoPathLength = lassoPath.length
+
+    if (lassoPath.length === 0) {
+      this.lassoPathTexture = undefined
+      this.lassoPathFbo = undefined
+      return
+    }
+
+    // Calculate texture size (square texture)
+    const textureSize = Math.ceil(Math.sqrt(lassoPath.length))
+    const textureData = new Float32Array(textureSize * textureSize * 4)
+
+    // Fill texture with lasso path points
+    for (const [i, point] of lassoPath.entries()) {
+      const [x, y] = point
+      textureData[i * 4] = x
+      textureData[i * 4 + 1] = y
+      textureData[i * 4 + 2] = 0 // unused
+      textureData[i * 4 + 3] = 0 // unused
+    }
+
+    if (!this.lassoPathTexture) this.lassoPathTexture = reglInstance.texture()
+    this.lassoPathTexture({
+      data: textureData,
+      width: textureSize,
+      height: textureSize,
+      type: 'float',
+    })
+
+    if (!this.lassoPathFbo) this.lassoPathFbo = reglInstance.framebuffer()
+    this.lassoPathFbo({
+      color: this.lassoPathTexture,
+      depth: false,
+      stencil: false,
+    })
   }
 
   public findHoveredPoint (): void {
