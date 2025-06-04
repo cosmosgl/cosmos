@@ -15,6 +15,7 @@ uniform float spaceSize;
 uniform vec2 screenSize;
 uniform vec2 linkVisibilityDistanceRange;
 uniform float linkVisibilityMinTransparency;
+uniform float linkOpacity;
 uniform float greyoutOpacity;
 uniform float curvedWeight;
 uniform float curvedLinkControlPointDistance;
@@ -120,7 +121,7 @@ void main() {
   // Calculate final color with opacity based on link distance
   vec3 rgbColor = color.rgb;
   // Adjust opacity based on link distance
-  float opacity = color.a * max(linkVisibilityMinTransparency, map(linkDistPx, linkVisibilityDistanceRange.g, linkVisibilityDistanceRange.r, 0.0, 1.0));
+  float opacity = color.a * linkOpacity * max(linkVisibilityMinTransparency, map(linkDistPx, linkVisibilityDistanceRange.g, linkVisibilityDistanceRange.r, 0.0, 1.0));
 
   // Apply greyed out opacity if either endpoint is greyed out
   if (greyoutStatusA.r > 0.0 || greyoutStatusB.r > 0.0) {

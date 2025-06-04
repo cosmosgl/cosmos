@@ -13,6 +13,7 @@ import { Meta } from "@storybook/blocks";
 | pointGreyoutOpacity | Greyed out point opacity value when the selection is active | `undefined` |
 | pointGreyoutColor | Greyed out point color value when the selection is active | `undefined` |
 | pointSize | The default size value to use for points when no point sizes are provided or if the size value in the array is `undefined` or `null` | `4` |
+| pointOpacity | Universal opacity value applied to all points. This value multiplies with individual point alpha values (if set via setPointColors). Useful for dynamically controlling opacity of all points without updating individual RGBA arrays. | `1.0` |
 | pointSizeScale | Scale factor for the point size | `1` |
 | hoveredPointCursor | Cursor style to use when hovering over a point | `auto` |
 | renderHoveredPointRing | Turns ring rendering around a point on hover on / off | `false` |
@@ -21,6 +22,7 @@ import { Meta } from "@storybook/blocks";
 | focusedPointIndex | Set focus on a point by index. A ring will be highlighted around the focused point. When set to `undefined`, no point is focused. | `undefined` |
 | renderLinks | Turns link rendering on / off | `true` |
 | linkColor | The default color to use for links when no link colors are provided, or if the color value in the array is `undefined` or `null`. This can be either a hex color string (e.g., '#666666') or an array of RGBA values in the format `[red, green, blue, alpha]` where each value is a number between 0 and 255 | `#666666` |
+| linkOpacity | Universal opacity value applied to all links. This value multiplies with individual link alpha values (if set via setLinkColors). Useful for dynamically controlling opacity of all links without updating individual RGBA arrays. | `1.0` |
 | linkGreyoutOpacity | Greyed out link opacity value when the selection is active | `0.1` |
 | linkWidth | The default width value to use for links when no link widths are provided or if the width value in the array is `undefined` or `null` | `1` |
 | linkWidthScale | Scale factor for the link width | `1` |
