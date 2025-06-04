@@ -4,7 +4,7 @@ import { createStory, Story } from '@/graph/stories/create-story'
 import { withLabels } from './clusters/with-labels'
 import { worm } from './clusters/worm'
 import { radial } from './clusters/radial'
-import { lassoSelection } from './clusters/lasso-selection'
+import { polygonSelection } from './clusters/polygon-selection'
 
 import createCosmosRaw from './create-cosmos?raw'
 import generateMeshDataRaw from './generate-mesh-data?raw'
@@ -12,9 +12,9 @@ import withLabelsStoryRaw from './clusters/with-labels?raw'
 import createClusterLabelsRaw from './create-cluster-labels?raw'
 import wormStory from './clusters/worm?raw'
 import radialStory from './clusters/radial?raw'
-import lassoSelectionStory from './clusters/lasso-selection?raw'
-import lassoSelectionStyleRaw from './clusters/lasso-selection/style.css?raw'
-import lassoSelectionLassoRaw from './clusters/lasso-selection/lasso.ts?raw'
+import polygonSelectionStory from './clusters/polygon-selection?raw'
+import polygonSelectionStyleRaw from './clusters/polygon-selection/style.css?raw'
+import polygonSelectionPolygonRaw from './clusters/polygon-selection/polygon.ts?raw'
 
 const meta: Meta<CosmosStoryProps> = {
   title: 'Examples/Clusters',
@@ -61,14 +61,14 @@ export const WithLabels: Story = {
   },
 }
 
-export const LassoSelection: Story = {
-  ...createStory(lassoSelection),
+export const PolygonSelection: Story = {
+  ...createStory(polygonSelection),
   parameters: {
     sourceCode: [
-      { name: 'Story', code: lassoSelectionStory },
-      { name: 'lasso.ts', code: lassoSelectionLassoRaw },
+      { name: 'Story', code: polygonSelectionStory },
+      { name: 'polygon.ts', code: polygonSelectionPolygonRaw },
       ...sourceCodeAddonParams,
-      { name: 'style.css', code: lassoSelectionStyleRaw },
+      { name: 'style.css', code: polygonSelectionStyleRaw },
     ],
   },
 }

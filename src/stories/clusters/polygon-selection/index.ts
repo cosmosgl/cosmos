@@ -1,9 +1,9 @@
 import { Graph } from '@cosmos.gl/graph'
 import { createCosmos } from '../../create-cosmos'
 import { generateMeshData } from '../../generate-mesh-data'
-import { LassoSelection } from './lasso'
+import { PolygonSelection } from './polygon'
 
-export const lassoSelection = (): {div: HTMLDivElement; graph: Graph; destroy: () => void } => {
+export const polygonSelection = (): {div: HTMLDivElement; graph: Graph; destroy: () => void } => {
   const nClusters = 25
   const { pointPositions, pointColors, pointClusters } = generateMeshData(150, 150, nClusters, 1.0)
 
@@ -26,24 +26,24 @@ export const lassoSelection = (): {div: HTMLDivElement; graph: Graph; destroy: (
 
   graph.setZoomLevel(0.4)
 
-  const lassoSelection = new LassoSelection(div, (lassoPoints) => {
-    graph.selectPointsInLasso(lassoPoints)
+  const polygonSelection = new PolygonSelection(div, (polygonPoints) => {
+    graph.selectPointsInPolygon(polygonPoints)
   })
 
   const actionsDiv = document.createElement('div')
   actionsDiv.className = 'actions'
   div.appendChild(actionsDiv)
 
-  const lassoButton = document.createElement('div')
-  lassoButton.className = 'action'
-  lassoButton.textContent = 'Enable Lasso Selection'
-  lassoButton.addEventListener('click', () => {
-    lassoSelection.enableLassoMode()
+  const polygonButton = document.createElement('div')
+  polygonButton.className = 'action'
+  polygonButton.textContent = 'Enable Polygon Selection'
+  polygonButton.addEventListener('click', () => {
+    polygonSelection.enablePolygonMode()
   })
-  actionsDiv.appendChild(lassoButton)
+  actionsDiv.appendChild(polygonButton)
 
   const destroy = (): void => {
-    lassoSelection.destroy()
+    polygonSelection.destroy()
     if (actionsDiv.parentNode) {
       actionsDiv.parentNode.removeChild(actionsDiv)
     }

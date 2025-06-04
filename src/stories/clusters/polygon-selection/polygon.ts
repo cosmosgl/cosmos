@@ -1,20 +1,20 @@
 import './style.css'
 
-export class LassoSelection {
+export class PolygonSelection {
   private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
   private isDrawing = false
   private points: Array<{ x: number; y: number }> = []
   private graphDiv: HTMLElement
-  private onLassoComplete?: (points: [number, number][]) => void
+  private onPolygonComplete?: (points: [number, number][]) => void
   private boundStartDrawing: (e: MouseEvent) => void
   private boundDraw: (e: MouseEvent) => void
   private boundStopDrawing: () => void
   private resizeObserver: ResizeObserver
 
-  public constructor (graphDiv: HTMLElement, onLassoComplete?: (points: [number, number][]) => void) {
+  public constructor (graphDiv: HTMLElement, onPolygonComplete?: (points: [number, number][]) => void) {
     this.graphDiv = graphDiv
-    this.onLassoComplete = onLassoComplete
+    this.onPolygonComplete = onPolygonComplete
 
     // Bind event handlers
     this.boundStartDrawing = this.startDrawing.bind(this)
@@ -23,7 +23,7 @@ export class LassoSelection {
 
     // Create canvas
     this.canvas = document.createElement('canvas')
-    this.canvas.className = 'lasso-canvas'
+    this.canvas.className = 'polygon-canvas'
 
     const ctx = this.canvas.getContext('2d')
     if (!ctx) throw new Error('Could not get canvas context')
@@ -37,7 +37,7 @@ export class LassoSelection {
     this.resizeObserver.observe(this.graphDiv)
   }
 
-  public enableLassoMode (): void {
+  public enablePolygonMode (): void {
     this.canvas.style.pointerEvents = 'auto'
     this.canvas.style.cursor = 'crosshair'
 
@@ -47,7 +47,7 @@ export class LassoSelection {
     this.canvas.addEventListener('mouseup', this.boundStopDrawing)
   }
 
-  public disableLassoMode (): void {
+  public disablePolygonMode (): void {
     this.canvas.style.pointerEvents = 'none'
     this.canvas.style.cursor = 'default'
 
@@ -61,7 +61,7 @@ export class LassoSelection {
   }
 
   public destroy (): void {
-    this.disableLassoMode()
+    this.disablePolygonMode()
     this.resizeObserver.disconnect()
     if (this.canvas.parentNode) {
       this.canvas.parentNode.removeChild(this.canvas)
@@ -124,20 +124,20 @@ export class LassoSelection {
       this.ctx.closePath()
       this.ctx.stroke()
 
-      const lassoPoints: [number, number][] = this.points.map(p => [p.x, p.y])
-      const firstLassoPoint = lassoPoints[0]
-      const lastLassoPoint = lassoPoints[lassoPoints.length - 1]
-      if (firstLassoPoint && lastLassoPoint && (firstLassoPoint[0] !== lastLassoPoint[0] || firstLassoPoint[1] !== lastLassoPoint[1])) {
-        lassoPoints.push(firstLassoPoint)
+      const polygonPoints: [number, number][] = this.points.map(p => [p.x, p.y])
+      const firstPolygonPoint = polygonPoints[0]
+      const lastPolygonPoint = polygonPoints[polygonPoints.length - 1]
+      if (firstPolygonPoint && lastPolygonPoint && (firstPolygonPoint[0] !== lastPolygonPoint[0] || firstPolygonPoint[1] !== lastPolygonPoint[1])) {
+        polygonPoints.push(firstPolygonPoint)
       }
 
-      if (this.onLassoComplete) {
-        this.onLassoComplete(lassoPoints)
+      if (this.onPolygonComplete) {
+        this.onPolygonComplete(polygonPoints)
       }
     }
 
     const pixelRatio = window.devicePixelRatio || 1
     this.ctx.clearRect(0, 0, this.canvas.width / pixelRatio, this.canvas.height / pixelRatio)
-    this.disableLassoMode()
+    this.disablePolygonMode()
   }
 }

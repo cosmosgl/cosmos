@@ -6,7 +6,7 @@ import { defaultConfigValues } from '@/graph/variables'
 import drawPointsFrag from '@/graph/modules/Points/draw-points.frag'
 import drawPointsVert from '@/graph/modules/Points/draw-points.vert'
 import findPointsOnAreaSelectionFrag from '@/graph/modules/Points/find-points-on-area-selection.frag'
-import findPointsOnLassoSelectionFrag from '@/graph/modules/Points/find-points-on-lasso-selection.frag'
+import findPointsOnPolygonSelectionFrag from '@/graph/modules/Points/find-points-on-polygon-selection.frag'
 import drawHighlightedFrag from '@/graph/modules/Points/draw-highlighted.frag'
 import drawHighlightedVert from '@/graph/modules/Points/draw-highlighted.vert'
 import findHoveredPointFrag from '@/graph/modules/Points/find-hovered-point.frag'
@@ -42,7 +42,7 @@ export class Points extends CoreModule {
   private updatePositionCommand: regl.DrawCommand | undefined
   private dragPointCommand: regl.DrawCommand | undefined
   private findPointsOnAreaSelectionCommand: regl.DrawCommand | undefined
-  private findPointsOnLassoSelectionCommand: regl.DrawCommand | undefined
+  private findPointsOnPolygonSelectionCommand: regl.DrawCommand | undefined
   private findHoveredPointCommand: regl.DrawCommand | undefined
   private clearHoveredFboCommand: regl.DrawCommand | undefined
   private clearSampledPointsFboCommand: regl.DrawCommand | undefined
@@ -53,9 +53,9 @@ export class Points extends CoreModule {
   private greyoutStatusTexture: regl.Texture2D | undefined
   private sizeTexture: regl.Texture2D | undefined
   private trackedIndicesTexture: regl.Texture2D | undefined
-  private lassoPathTexture: regl.Texture2D | undefined
-  private lassoPathFbo: regl.Framebuffer2D | undefined
-  private lassoPathLength = 0
+  private polygonPathTexture: regl.Texture2D | undefined
+  private polygonPathFbo: regl.Framebuffer2D | undefined
+  private polygonPathLength = 0
   private drawPointIndices: regl.Buffer | undefined
   private hoveredPointIndices: regl.Buffer | undefined
   private sampledPointIndices: regl.Buffer | undefined
@@ -285,9 +285,9 @@ export class Points extends CoreModule {
       })
     }
 
-    if (!this.findPointsOnLassoSelectionCommand) {
-      this.findPointsOnLassoSelectionCommand = reglInstance({
-        frag: findPointsOnLassoSelectionFrag,
+    if (!this.findPointsOnPolygonSelectionCommand) {
+      this.findPointsOnPolygonSelectionCommand = reglInstance({
+        frag: findPointsOnPolygonSelectionFrag,
         vert: updateVert,
         framebuffer: () => this.selectedFbo as regl.Framebuffer2D,
         primitive: 'triangle strip',
@@ -300,8 +300,8 @@ export class Points extends CoreModule {
           spaceSize: () => store.adjustedSpaceSize,
           screenSize: () => store.screenSize,
           transformationMatrix: () => store.transform,
-          lassoPathTexture: () => this.lassoPathTexture,
-          lassoPathLength: () => this.lassoPathLength,
+          polygonPathTexture: () => this.polygonPathTexture,
+          polygonPathLength: () => this.polygonPathLength,
         },
       })
     }
@@ -573,26 +573,26 @@ export class Points extends CoreModule {
     this.findPointsOnAreaSelectionCommand?.()
   }
 
-  public findPointsOnLassoSelection (): void {
-    this.findPointsOnLassoSelectionCommand?.()
+  public findPointsOnPolygonSelection (): void {
+    this.findPointsOnPolygonSelectionCommand?.()
   }
 
-  public updateLassoPath (lassoPath: [number, number][]): void {
+  public updatePolygonPath (polygonPath: [number, number][]): void {
     const { reglInstance } = this
-    this.lassoPathLength = lassoPath.length
+    this.polygonPathLength = polygonPath.length
 
-    if (lassoPath.length === 0) {
-      this.lassoPathTexture = undefined
-      this.lassoPathFbo = undefined
+    if (polygonPath.length === 0) {
+      this.polygonPathTexture = undefined
+      this.polygonPathFbo = undefined
       return
     }
 
     // Calculate texture size (square texture)
-    const textureSize = Math.ceil(Math.sqrt(lassoPath.length))
+    const textureSize = Math.ceil(Math.sqrt(polygonPath.length))
     const textureData = new Float32Array(textureSize * textureSize * 4)
 
-    // Fill texture with lasso path points
-    for (const [i, point] of lassoPath.entries()) {
+    // Fill texture with polygon path points
+    for (const [i, point] of polygonPath.entries()) {
       const [x, y] = point
       textureData[i * 4] = x
       textureData[i * 4 + 1] = y
@@ -600,17 +600,17 @@ export class Points extends CoreModule {
       textureData[i * 4 + 3] = 0 // unused
     }
 
-    if (!this.lassoPathTexture) this.lassoPathTexture = reglInstance.texture()
-    this.lassoPathTexture({
+    if (!this.polygonPathTexture) this.polygonPathTexture = reglInstance.texture()
+    this.polygonPathTexture({
       data: textureData,
       width: textureSize,
       height: textureSize,
       type: 'float',
     })
 
-    if (!this.lassoPathFbo) this.lassoPathFbo = reglInstance.framebuffer()
-    this.lassoPathFbo({
-      color: this.lassoPathTexture,
+    if (!this.polygonPathFbo) this.polygonPathFbo = reglInstance.framebuffer()
+    this.polygonPathFbo({
+      color: this.polygonPathTexture,
       depth: false,
       stencil: false,
     })
