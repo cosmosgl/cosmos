@@ -648,7 +648,7 @@ export class Graph {
    * The `top` and `bottom` coordinates should be from 0 to the height of the canvas.
    * @returns A Float32Array containing the indices of points inside a rectangular area.
    */
-  public getPointsInRange (selection: [[number, number], [number, number]]): Float32Array {
+  public getPointsInRect (selection: [[number, number], [number, number]]): Float32Array {
     if (this._isDestroyed || !this.reglInstance || !this.points) return new Float32Array()
     const h = this.store.screenSize[1]
     this.store.selectedArea = [[selection[0][0], (h - selection[1][1])], [selection[1][0], (h - selection[0][1])]]
@@ -661,6 +661,18 @@ export class Graph {
         else return -1
       })
       .filter(d => d !== -1)
+  }
+
+  /**
+   * Get points indices inside a rectangular area.
+   * @param selection - Array of two corner points `[[left, top], [right, bottom]]`.
+   * The `left` and `right` coordinates should be from 0 to the width of the canvas.
+   * The `top` and `bottom` coordinates should be from 0 to the height of the canvas.
+   * @returns A Float32Array containing the indices of points inside a rectangular area.
+   * @deprecated Use `getPointsInRect` instead. This method will be removed in a future version.
+   */
+  public getPointsInRange (selection: [[number, number], [number, number]]): Float32Array {
+    return this.getPointsInRect(selection)
   }
 
   /**
@@ -692,7 +704,7 @@ export class Graph {
    * @param selection - Array of two corner points `[[left, top], [right, bottom]]`.
    * The `left` and `right` coordinates should be from 0 to the width of the canvas.
    * The `top` and `bottom` coordinates should be from 0 to the height of the canvas. */
-  public selectPointsInRange (selection: [[number, number], [number, number]] | null): void {
+  public selectPointsInRect (selection: [[number, number], [number, number]] | null): void {
     if (this._isDestroyed || !this.reglInstance || !this.points) return
     if (selection) {
       const h = this.store.screenSize[1]
@@ -709,6 +721,16 @@ export class Graph {
       this.store.selectedIndices = null
     }
     this.points.updateGreyoutStatus()
+  }
+
+  /** Select points inside a rectangular area.
+   * @param selection - Array of two corner points `[[left, top], [right, bottom]]`.
+   * The `left` and `right` coordinates should be from 0 to the width of the canvas.
+   * The `top` and `bottom` coordinates should be from 0 to the height of the canvas.
+   * @deprecated Use `selectPointsInRect` instead. This method will be removed in a future version.
+   */
+  public selectPointsInRange (selection: [[number, number], [number, number]] | null): void {
+    return this.selectPointsInRect(selection)
   }
 
   /** Select points inside a polygon area.

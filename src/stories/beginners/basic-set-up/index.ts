@@ -119,7 +119,7 @@ export const basicSetUp = (): { graph: Graph; div: HTMLDivElement} => {
     const top = getRandomInRange([h / 4, h / 2])
     const bottom = getRandomInRange([top, (h * 3) / 4])
     pause()
-    graph.selectPointsInRange([
+    graph.selectPointsInRect([
       [left, top],
       [right, bottom],
     ])
