@@ -15,6 +15,7 @@ uniform float sizeScale;
 uniform float spaceSize;
 uniform vec2 screenSize;
 uniform float greyoutOpacity;
+uniform float pointOpacity;
 uniform vec4 greyoutColor;
 uniform vec4 backgroundColor;
 uniform bool scalePointsOnZoom;
@@ -51,7 +52,7 @@ void main() {
   gl_PointSize = calculatePointSize(size * sizeScale);
 
   rgbColor = color.rgb;
-  alpha = color.a;
+  alpha = color.a * pointOpacity;
 
   // Adjust alpha of selected points
   vec4 greyoutStatus = texture2D(pointGreyoutStatus, (textureCoords + 0.5) / pointsTextureSize);
