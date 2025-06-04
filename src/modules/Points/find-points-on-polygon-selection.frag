@@ -3,16 +3,16 @@ precision highp float;
 #endif
 
 uniform sampler2D positionsTexture;
-uniform sampler2D lassoPathTexture; // Texture containing lasso path points
-uniform int lassoPathLength;
+uniform sampler2D polygonPathTexture; // Texture containing polygon path points
+uniform int polygonPathLength;
 uniform float spaceSize;
 uniform vec2 screenSize;
 uniform mat3 transformationMatrix;
 
 varying vec2 textureCoords;
 
-// Get a point from the lasso path texture at a specific index
-vec2 getLassoPoint(sampler2D pathTexture, int index, int pathLength) {
+// Get a point from the polygon path texture at a specific index
+vec2 getPolygonPoint(sampler2D pathTexture, int index, int pathLength) {
   if (index >= pathLength) return vec2(0.0);
   
   // Calculate texture coordinates for the index
@@ -35,8 +35,8 @@ bool pointInPolygon(vec2 point, sampler2D pathTexture, int pathLength) {
     
     int j = int(mod(float(i + 1), float(pathLength)));
     
-    vec2 pi = getLassoPoint(pathTexture, i, pathLength);
-    vec2 pj = getLassoPoint(pathTexture, j, pathLength);
+    vec2 pi = getPolygonPoint(pathTexture, i, pathLength);
+    vec2 pj = getPolygonPoint(pathTexture, j, pathLength);
     
     if (((pi.y > point.y) != (pj.y > point.y)) &&
         (point.x < (pj.x - pi.x) * (point.y - pi.y) / (pj.y - pi.y) + pi.x)) {
@@ -58,8 +58,8 @@ void main() {
   
   gl_FragColor = vec4(0.0, 0.0, pointPosition.rg);
   
-  // Check if point center is inside the lasso polygon
-  if (pointInPolygon(screenPos, lassoPathTexture, lassoPathLength)) {
+  // Check if point center is inside the polygon
+  if (pointInPolygon(screenPos, polygonPathTexture, polygonPathLength)) {
     gl_FragColor.r = 1.0;
   }
 } 
