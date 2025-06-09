@@ -1,16 +1,16 @@
 
 <p align="center" style="color: #444">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://github.com/user-attachments/assets/1428fb58-c85e-4f9c-8f14-5be2f7c73b16">
-    <source media="(prefers-color-scheme: light)" srcset="https://github.com/user-attachments/assets/44cdb7c6-2ccd-4ed0-a6c3-e9c4606559f0">
-    <img align="center" width="225px" alt="cosmos.gl logo" src="https://github.com/user-attachments/assets/1428fb58-c85e-4f9c-8f14-5be2f7c73b16">
+    <source media="(prefers-color-scheme: dark)" srcset="https://assets.cosmograph.app/cosmos-dark-theme.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://assets.cosmograph.app/cosmos-light-theme.svg">
+    <img align="center" width="225px" alt="cosmos.gl logo" src="https://assets.cosmograph.app/cosmos-light-theme.svg">
   </picture>
 </p>
 <p align="center" style="font-size: 1.2rem;">GPU-accelerated Force Graph</p>
 
-**Cosmos.gl** is a high-performance WebGL Force Graph algorithm and rendering engine. All the computations and drawing occur on the GPU in fragment and vertex shaders, avoiding expensive memory operations. It enables the real-time simulation of network graphs consisting of hundreds of thousands of points and links on modern hardware.
+**cosmos.gl** is a high-performance WebGL Force Graph algorithm and rendering engine. All the computations and drawing occur on the GPU in fragment and vertex shaders, avoiding expensive memory operations. It enables the real-time simulation of network graphs consisting of hundreds of thousands of points and links on modern hardware.
 
-This engine powers 🪐 [Cosmograph](http://cosmograph.app) — a toolset for exploring complex networks and AI embeddings.
+This engine powers 🪐 [Cosmograph](https://cosmograph.app) — a toolset for exploring complex networks and AI embeddings.
 
 <video src="https://user-images.githubusercontent.com/755708/173392407-9b05cbb6-d39e-4c2c-ab41-50900cfda823.mp4" autoplay controls alt="Demo of cosmos.gl GPU-accelerated Force Graph">
 </video>
@@ -77,7 +77,7 @@ graph.render()
 
 ### What's New in v2.0?
 
-Cosmos.gl v2.0 introduces significant improvements in performance and data handling:
+cosmos.gl v2.0 introduces significant improvements in performance and data handling:
 
 - Enhanced data structures with WebGL-compatible formats.
 - Methods like `setPointPositions` and `setLinks` replace `setData` for improved efficiency.
@@ -107,7 +107,7 @@ Check the [Migration Guide](./cosmos-2-0-migration-notes.md) for details.
 ### Known Issues
 
 - ~~Starting from version 15.4, iOS has stopped supporting the key WebGL extension powering our Many-Body force implementation (`EXT_float_blend`). We're investigating this issue and exploring solutions.~~ The latest iOS works again!
-- Cosmos.gl doesn't work on some Android devices.
+- cosmos.gl doesn't work on Android devices that don't support the `OES_texture_float` WebGL extension.
 
 
 ---
