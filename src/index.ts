@@ -938,6 +938,17 @@ export class Graph {
   }
 
   /**
+   * For the points that are currently visible on the screen, get a sample of point indices and positions.
+   * The resulting number of points will depend on the `pointSamplingDistance` configuration property,
+   * and the sampled points will be evenly distributed.
+   * @returns An object containing arrays of point indices and positions.
+   */
+  public getSampledPoints (): { indices: number[]; positions: number[] } {
+    if (this._isDestroyed || !this.points) return { indices: [], positions: [] }
+    return this.points.getSampledPoints()
+  }
+
+  /**
    * Gets the X-axis of rescaling function.
    *
    * This scale is automatically created when position rescaling is enabled.
