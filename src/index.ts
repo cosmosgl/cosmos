@@ -927,6 +927,17 @@ export class Graph {
   }
 
   /**
+   * Get current X and Y coordinates of the tracked points as an array.
+   * @returns Array of point positions in the format [x1, y1, x2, y2, ..., xn, yn] for tracked points only.
+   * The positions are ordered by the tracking indices (same order as provided to trackPointPositionsByIndices).
+   * Returns an empty array if no points are being tracked.
+   */
+  public getTrackedPointPositionsArray (): number[] {
+    if (this._isDestroyed || !this.points) return []
+    return this.points.getTrackedPositionsArray()
+  }
+
+  /**
    * For the points that are currently visible on the screen, get a sample of point indices with their coordinates.
    * The resulting number of points will depend on the `pointSamplingDistance` configuration property,
    * and the sampled points will be evenly distributed.

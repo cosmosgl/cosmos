@@ -721,6 +721,23 @@ export class Points extends CoreModule {
     return { indices, positions }
   }
 
+  public getTrackedPositionsArray (): number[] {
+    const positions: number[] = []
+    if (!this.trackedIndices) return positions
+    positions.length = this.trackedIndices.length * 2
+    const pixels = readPixels(this.reglInstance, this.trackedPositionsFbo as regl.Framebuffer2D)
+    for (let i = 0; i < pixels.length / 4; i += 1) {
+      const x = pixels[i * 4]
+      const y = pixels[i * 4 + 1]
+      const index = this.trackedIndices[i]
+      if (x !== undefined && y !== undefined && index !== undefined) {
+        positions[i * 2] = x
+        positions[i * 2 + 1] = y
+      }
+    }
+    return positions
+  }
+
   private swapFbo (): void {
     const temp = this.previousPositionFbo
     this.previousPositionFbo = this.currentPositionFbo
