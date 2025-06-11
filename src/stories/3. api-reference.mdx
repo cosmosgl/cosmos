@@ -382,6 +382,16 @@ This method retrieves the current positions of points that are being tracked. Th
 
 * A `Map` object where the keys are the indices of the tracked points and the values are their corresponding X and Y coordinates in the form of a `[number, number]` array.
 
+### <a name="get_tracked_point_positions_array" href="#get_tracked_point_positions_array">#</a> graph.<b>getTrackedPointPositionsArray</b>()
+
+This method retrieves the current positions of points that are being tracked as an array for optimized performance. This method provides the same functionality as `getTrackedPointPositionsMap` but returns data as a flat array instead of a Map object, which can be more efficient for applications that need to process large numbers of tracked points.
+
+The positions are returned in the same order as the indices provided to [**trackPointPositionsByIndices**](#track_point_positions_by_indices).
+
+**Returns:**
+
+* An array of numbers representing the X and Y coordinates of tracked points in the format `[x1, y1, x2, y2, ..., xn, yn]`, where each pair corresponds to a tracked point in the order they were specified for tracking. Returns an empty array if no points are being tracked.
+
 ### <a name="get_sampled_point_positions_map" href="#get_sampled_point_positions_map">#</a> graph.<b>getSampledPointPositionsMap</b>()
 
 This method provides a sampling of point positions from the currently visible points on the screen. It returns a `Map` containing a sample of point indices and their corresponding X and Y coordinates for the points that are currently visible on the screen.
