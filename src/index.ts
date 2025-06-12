@@ -986,10 +986,15 @@ export class Graph {
   public start (alpha = 1): void {
     if (this._isDestroyed) return
     if (!this.graph.pointsNumber) return
-    this.store.isSimulationRunning = true
+
+    // Only start the simulation if alpha > 0
+    if (alpha > 0) {
+      this.store.isSimulationRunning = true
+      this.store.simulationProgress = 0
+      this.config.onSimulationStart?.()
+    }
+
     this.store.alpha = alpha
-    this.store.simulationProgress = 0
-    this.config.onSimulationStart?.()
     this.stopFrames()
     this.frame()
   }
