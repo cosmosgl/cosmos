@@ -4,9 +4,11 @@ import {
   defaultPointColor,
   defaultGreyoutPointOpacity,
   defaultGreyoutPointColor,
+  defaultPointOpacity,
   defaultPointSize,
   defaultLinkColor,
   defaultGreyoutLinkOpacity,
+  defaultLinkOpacity,
   defaultLinkWidth,
   defaultBackgroundColor,
   defaultConfigValues,
@@ -74,6 +76,15 @@ export interface GraphConfigInterface {
    * Default value: `4`
   */
   pointSize?: number;
+
+  /**
+   * Universal opacity value applied to all points.
+   * This value multiplies with individual point alpha values (if set via setPointColors).
+   * Useful for dynamically controlling opacity of all points without updating individual RGBA arrays.
+   * Default value: `1.0`
+   */
+  pointOpacity?: number;
+
   /**
    * Scale factor for the point size.
    * Default value: `1`
@@ -127,6 +138,14 @@ export interface GraphConfigInterface {
    * Default value: '#666666'
    */
   linkColor?: string | [number, number, number, number];
+
+  /**
+   * Universal opacity value applied to all links.
+   * This value multiplies with individual link alpha values (if set via setLinkColors).
+   * Useful for dynamically controlling opacity of all links without updating individual RGBA arrays.
+   * Default value: `1.0`
+   */
+  linkOpacity?: number;
 
   /**
    * Greyed out link opacity value when the selection is active.
@@ -517,6 +536,7 @@ export class GraphConfig implements GraphConfigInterface {
   public pointGreyoutOpacity = defaultGreyoutPointOpacity
   public pointGreyoutColor = defaultGreyoutPointColor
   public pointSize = defaultPointSize
+  public pointOpacity = defaultPointOpacity
   public pointSizeScale = defaultConfigValues.pointSizeScale
   public hoveredPointCursor = defaultConfigValues.hoveredPointCursor
   public renderHoveredPointRing = defaultConfigValues.renderHoveredPointRing
@@ -524,6 +544,7 @@ export class GraphConfig implements GraphConfigInterface {
   public focusedPointRingColor = defaultConfigValues.focusedPointRingColor
   public focusedPointIndex = defaultConfigValues.focusedPointIndex
   public linkColor = defaultLinkColor
+  public linkOpacity = defaultLinkOpacity
   public linkGreyoutOpacity = defaultGreyoutLinkOpacity
   public linkWidth = defaultLinkWidth
   public linkWidthScale = defaultConfigValues.linkWidthScale

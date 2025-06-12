@@ -14,6 +14,7 @@ uniform bool scalePointsOnZoom;
 uniform float pointIndex;
 uniform float maxPointSize;
 uniform vec4 color;
+uniform float universalPointOpacity;
 uniform float greyoutOpacity;
 uniform bool darkenGreyout;
 uniform vec4 backgroundColor;
@@ -41,7 +42,7 @@ void main () {
   vec4 pointPosition = texture2D(positionsTexture, textureCoordinates / pointsTextureSize);
 
   rgbColor = color.rgb;
-  pointOpacity = color.a;
+  pointOpacity = color.a * universalPointOpacity;
   vec4 greyoutStatus = texture2D(pointGreyoutStatusTexture, textureCoordinates / pointsTextureSize);
   if (greyoutStatus.r > 0.0) {
     if (greyoutColor[0] != -1.0) {

@@ -69,6 +69,7 @@ export class Lines extends CoreModule {
           screenSize: () => store.screenSize,
           linkVisibilityDistanceRange: () => config.linkVisibilityDistanceRange,
           linkVisibilityMinTransparency: () => config.linkVisibilityMinTransparency,
+          linkOpacity: () => config.linkOpacity,
           greyoutOpacity: () => config.linkGreyoutOpacity,
           scaleLinksOnZoom: () => config.scaleLinksOnZoom,
           maxPointSize: () => store.maxPointSize,

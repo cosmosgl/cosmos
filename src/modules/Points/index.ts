@@ -232,6 +232,7 @@ export class Points extends CoreModule {
           transformationMatrix: () => store.transform,
           spaceSize: () => store.adjustedSpaceSize,
           screenSize: () => store.screenSize,
+          pointOpacity: () => config.pointOpacity,
           greyoutOpacity: () => config.pointGreyoutOpacity ?? -1,
           greyoutColor: () => store.greyoutPointColor,
           backgroundColor: () => store.backgroundColor,
@@ -412,6 +413,7 @@ export class Points extends CoreModule {
           scalePointsOnZoom: () => config.scalePointsOnZoom,
           maxPointSize: () => store.maxPointSize,
           pointGreyoutStatusTexture: () => this.greyoutStatusFbo,
+          universalPointOpacity: () => config.pointOpacity,
           greyoutOpacity: () => config.pointGreyoutOpacity ?? -1,
           darkenGreyout: () => store.darkenGreyout,
           backgroundColor: () => store.backgroundColor,
@@ -690,6 +692,47 @@ export class Points extends CoreModule {
 
       if (isNotEmpty && index !== undefined && x !== undefined && y !== undefined) {
         positions.set(index, [x, y])
+      }
+    }
+    return positions
+  }
+
+  public getSampledPoints (): { indices: number[]; positions: number[] } {
+    const indices: number[] = []
+    const positions: number[] = []
+    if (!this.sampledPointsFbo) return { indices, positions }
+
+    this.clearSampledPointsFboCommand?.()
+    this.fillSampledPointsFboCommand?.()
+    const pixels = readPixels(this.reglInstance, this.sampledPointsFbo as regl.Framebuffer2D)
+
+    for (let i = 0; i < pixels.length / 4; i++) {
+      const index = pixels[i * 4]
+      const isNotEmpty = !!pixels[i * 4 + 1]
+      const x = pixels[i * 4 + 2]
+      const y = pixels[i * 4 + 3]
+
+      if (isNotEmpty && index !== undefined && x !== undefined && y !== undefined) {
+        indices.push(index)
+        positions.push(x, y)
+      }
+    }
+
+    return { indices, positions }
+  }
+
+  public getTrackedPositionsArray (): number[] {
+    const positions: number[] = []
+    if (!this.trackedIndices) return positions
+    positions.length = this.trackedIndices.length * 2
+    const pixels = readPixels(this.reglInstance, this.trackedPositionsFbo as regl.Framebuffer2D)
+    for (let i = 0; i < pixels.length / 4; i += 1) {
+      const x = pixels[i * 4]
+      const y = pixels[i * 4 + 1]
+      const index = this.trackedIndices[i]
+      if (x !== undefined && y !== undefined && index !== undefined) {
+        positions[i * 2] = x
+        positions[i * 2 + 1] = y
       }
     }
     return positions

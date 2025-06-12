@@ -323,6 +323,17 @@ export class Graph {
   }
 
   /**
+   * Gets the current colors of the graph points.
+   *
+   * @returns {Float32Array} A Float32Array representing the colors of points in the format [r1, g1, b1, a1, r2, g2, b2, a2, ..., rn, gn, bn, an],
+   * where each color is in RGBA format. Returns an empty Float32Array if no point colors are set.
+   */
+  public getPointColors (): Float32Array {
+    if (this._isDestroyed) return new Float32Array()
+    return this.graph.pointColors ?? new Float32Array()
+  }
+
+  /**
    * Sets the sizes for the graph points.
    *
    * @param {Float32Array} pointSizes - A Float32Array representing the sizes of points in the format [size1, size2, ..., sizen],
@@ -333,6 +344,17 @@ export class Graph {
     if (this._isDestroyed) return
     this.graph.inputPointSizes = pointSizes
     this._needsPointSizeUpdate = true
+  }
+
+  /**
+   * Gets the current sizes of the graph points.
+   *
+   * @returns {Float32Array} A Float32Array representing the sizes of points in the format [size1, size2, ..., sizen],
+   * where `n` is the index of the point. Returns an empty Float32Array if no point sizes are set.
+   */
+  public getPointSizes (): Float32Array {
+    if (this._isDestroyed) return new Float32Array()
+    return this.graph.pointSizes ?? new Float32Array()
   }
 
   /**
@@ -368,6 +390,17 @@ export class Graph {
   }
 
   /**
+   * Gets the current colors of the graph links.
+   *
+   * @returns {Float32Array} A Float32Array representing the colors of links in the format [r1, g1, b1, a1, r2, g2, b2, a2, ..., rn, gn, bn, an],
+   * where each color is in RGBA format. Returns an empty Float32Array if no link colors are set.
+   */
+  public getLinkColors (): Float32Array {
+    if (this._isDestroyed) return new Float32Array()
+    return this.graph.linkColors ?? new Float32Array()
+  }
+
+  /**
    * Sets the widths for the graph links.
    *
    * @param {Float32Array} linkWidths - A Float32Array representing the widths of links in the format [width1, width2, ..., widthn],
@@ -378,6 +411,17 @@ export class Graph {
     if (this._isDestroyed) return
     this.graph.inputLinkWidths = linkWidths
     this._needsLinkWidthUpdate = true
+  }
+
+  /**
+   * Gets the current widths of the graph links.
+   *
+   * @returns {Float32Array} A Float32Array representing the widths of links in the format [width1, width2, ..., widthn],
+   * where `n` is the index of the link. Returns an empty Float32Array if no link widths are set.
+   */
+  public getLinkWidths (): Float32Array {
+    if (this._isDestroyed) return new Float32Array()
+    return this.graph.linkWidths ?? new Float32Array()
   }
 
   /**
@@ -883,6 +927,17 @@ export class Graph {
   }
 
   /**
+   * Get current X and Y coordinates of the tracked points as an array.
+   * @returns Array of point positions in the format [x1, y1, x2, y2, ..., xn, yn] for tracked points only.
+   * The positions are ordered by the tracking indices (same order as provided to trackPointPositionsByIndices).
+   * Returns an empty array if no points are being tracked.
+   */
+  public getTrackedPointPositionsArray (): number[] {
+    if (this._isDestroyed || !this.points) return []
+    return this.points.getTrackedPositionsArray()
+  }
+
+  /**
    * For the points that are currently visible on the screen, get a sample of point indices with their coordinates.
    * The resulting number of points will depend on the `pointSamplingDistance` configuration property,
    * and the sampled points will be evenly distributed.
@@ -891,6 +946,17 @@ export class Graph {
   public getSampledPointPositionsMap (): Map<number, [number, number]> {
     if (this._isDestroyed || !this.points) return new Map()
     return this.points.getSampledPointPositionsMap()
+  }
+
+  /**
+   * For the points that are currently visible on the screen, get a sample of point indices and positions.
+   * The resulting number of points will depend on the `pointSamplingDistance` configuration property,
+   * and the sampled points will be evenly distributed.
+   * @returns An object containing arrays of point indices and positions.
+   */
+  public getSampledPoints (): { indices: number[]; positions: number[] } {
+    if (this._isDestroyed || !this.points) return { indices: [], positions: [] }
+    return this.points.getSampledPoints()
   }
 
   /**
@@ -920,10 +986,15 @@ export class Graph {
   public start (alpha = 1): void {
     if (this._isDestroyed) return
     if (!this.graph.pointsNumber) return
-    this.store.isSimulationRunning = true
+
+    // Only start the simulation if alpha > 0
+    if (alpha > 0) {
+      this.store.isSimulationRunning = true
+      this.store.simulationProgress = 0
+      this.config.onSimulationStart?.()
+    }
+
     this.store.alpha = alpha
-    this.store.simulationProgress = 0
-    this.config.onSimulationStart?.()
     this.stopFrames()
     this.frame()
   }
