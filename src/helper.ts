@@ -1,5 +1,6 @@
 import { color as d3Color } from 'd3-color'
 import regl from 'regl'
+import DOMPurify from 'dompurify'
 
 export const isFunction = <T>(a: T): boolean => typeof a === 'function'
 export const isArray = <T>(a: unknown | T[]): a is T[] => Array.isArray(a)
@@ -49,4 +50,25 @@ export function clamp (num: number, min: number, max: number): number {
 
 export function isNumber (value: number | undefined | null | typeof NaN): boolean {
   return value !== undefined && value !== null && !Number.isNaN(value)
+}
+
+/**
+ * Sanitizes HTML content to prevent XSS attacks using DOMPurify
+ *
+ * This function is used internally to sanitize HTML content before setting innerHTML,
+ * such as in attribution text. It uses a safe default configuration that allows
+ * only common safe HTML elements and attributes.
+ *
+ * @param html The HTML string to sanitize
+ * @param options Optional DOMPurify configuration options to override defaults
+ * @returns Sanitized HTML string safe for innerHTML usage
+ */
+export function sanitizeHtml (html: string, options?: DOMPurify.Config): string {
+  return DOMPurify.sanitize(html, {
+    // Default configuration: allow common safe HTML elements and attributes
+    ALLOWED_TAGS: ['a', 'b', 'i', 'em', 'strong', 'span', 'div', 'p', 'br'],
+    ALLOWED_ATTR: ['href', 'target', 'class', 'id', 'style'],
+    ALLOW_DATA_ATTR: false,
+    ...options,
+  })
 }
