@@ -5,7 +5,7 @@ import { D3ZoomEvent } from 'd3-zoom'
 import { D3DragEvent } from 'd3-drag'
 import regl from 'regl'
 import { GraphConfig, GraphConfigInterface } from '@/graph/config'
-import { getRgbaColor, readPixels } from '@/graph/helper'
+import { getRgbaColor, readPixels, sanitizeHtml } from '@/graph/helper'
 import { ForceCenter } from '@/graph/modules/ForceCenter'
 import { ForceGravity } from '@/graph/modules/ForceGravity'
 import { ForceLink, LinkDirection } from '@/graph/modules/ForceLink'
@@ -1401,7 +1401,12 @@ export class Graph {
       font-size: 0.7rem;
       font-family: inherit;
     `
-    this.attributionDivElement.innerHTML = this.config.attribution
+    // Sanitize the attribution HTML content to prevent XSS attacks
+    // Use more permissive settings for attribution since it's controlled by the library user
+    this.attributionDivElement.innerHTML = sanitizeHtml(this.config.attribution, {
+      ALLOWED_TAGS: ['a', 'b', 'i', 'em', 'strong', 'span', 'div', 'p', 'br', 'img'],
+      ALLOWED_ATTR: ['href', 'target', 'class', 'id', 'style', 'src', 'alt', 'title'],
+    })
     this.store.div?.appendChild(this.attributionDivElement)
   }
 }
