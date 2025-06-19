@@ -239,6 +239,8 @@ export class Points extends CoreModule {
           darkenGreyout: () => store.darkenGreyout,
           scalePointsOnZoom: () => config.scalePointsOnZoom,
           maxPointSize: () => store.maxPointSize,
+          renderOnlySelected: reglInstance.prop<{ renderOnlySelected: boolean }, 'renderOnlySelected'>('renderOnlySelected'),
+          renderOnlyUnselected: reglInstance.prop<{ renderOnlyUnselected: boolean }, 'renderOnlyUnselected'>('renderOnlyUnselected'),
         },
         blend: {
           enable: true,
@@ -542,7 +544,17 @@ export class Points extends CoreModule {
     const { config: { renderHoveredPointRing, pointSize }, store, data } = this
     if (!this.colorBuffer) this.updateColor()
     if (!this.sizeBuffer) this.updateSize()
-    this.drawCommand?.()
+
+    // Render in layers: unselected points first (behind), then selected points (in front)
+    if (store.selectedIndices && store.selectedIndices.length > 0) {
+      // First draw unselected points (they will appear behind)
+      this.drawCommand?.({ renderOnlySelected: false, renderOnlyUnselected: true })
+      // Then draw selected points (they will appear in front)
+      this.drawCommand?.({ renderOnlySelected: true, renderOnlyUnselected: false })
+    } else {
+      // If no selection, draw all points
+      this.drawCommand?.({ renderOnlySelected: false, renderOnlyUnselected: false })
+    }
     if ((renderHoveredPointRing) && store.hoveredPoint) {
       this.drawHighlightedCommand?.({
         width: 0.85,
