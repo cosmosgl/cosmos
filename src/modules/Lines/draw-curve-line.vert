@@ -63,7 +63,11 @@ float calculateArrowWidth(float arrowWidth) {
   if (scaleLinksOnZoom) {
     return arrowWidth;
   } else {
-    return arrowWidth / transformationMatrix[0][0];
+    // Apply the same scaling logic as calculateLinkWidth to maintain proportionality
+    arrowWidth = arrowWidth / transformationMatrix[0][0];
+    // Apply the same non-linear scaling to avoid extreme widths
+    arrowWidth *= min(5.0, max(1.0, transformationMatrix[0][0] * 0.01));
+    return arrowWidth;
   }
 }
 
@@ -100,7 +104,8 @@ void main() {
   float arrowWidth = linkWidth * k;
   arrowWidth *= arrowSizeScale;
 
-  float arrowWidthDifference = arrowWidth - linkWidth;
+  // Ensure arrow width difference is non-negative to prevent unwanted changes to link width
+  float arrowWidthDifference = max(0.0, arrowWidth - linkWidth);
 
   // Calculate arrow width in pixels
   float arrowWidthPx = calculateArrowWidth(arrowWidth);

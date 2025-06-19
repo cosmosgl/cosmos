@@ -21,6 +21,8 @@ uniform vec4 backgroundColor;
 uniform bool scalePointsOnZoom;
 uniform float maxPointSize;
 uniform bool darkenGreyout;
+uniform bool renderOnlySelected;
+uniform bool renderOnlyUnselected;
 
 varying vec2 textureCoords;
 varying vec3 rgbColor;
@@ -39,6 +41,23 @@ float calculatePointSize(float size) {
 
 void main() {  
   textureCoords = pointIndices;
+  
+  // Check greyout status for selective rendering
+  vec4 greyoutStatus = texture2D(pointGreyoutStatus, (textureCoords + 0.5) / pointsTextureSize);
+  bool isSelected = greyoutStatus.r == 0.0;
+  
+  // Discard point based on rendering mode
+  if (renderOnlySelected && !isSelected) {
+    gl_Position = vec4(2.0, 2.0, 2.0, 1.0); // Move off-screen
+    gl_PointSize = 0.0;
+    return;
+  }
+  if (renderOnlyUnselected && isSelected) {
+    gl_Position = vec4(2.0, 2.0, 2.0, 1.0); // Move off-screen
+    gl_PointSize = 0.0;
+    return;
+  }
+  
   // Position
   vec4 pointPosition = texture2D(positionsTexture, (textureCoords + 0.5) / pointsTextureSize);
   vec2 point = pointPosition.rg;
@@ -55,7 +74,6 @@ void main() {
   alpha = color.a * pointOpacity;
 
   // Adjust alpha of selected points
-  vec4 greyoutStatus = texture2D(pointGreyoutStatus, (textureCoords + 0.5) / pointsTextureSize);
   if (greyoutStatus.r > 0.0) {
     if (greyoutColor[0] != -1.0) {
       rgbColor = greyoutColor.rgb;
