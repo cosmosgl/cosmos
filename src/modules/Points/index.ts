@@ -239,8 +239,8 @@ export class Points extends CoreModule {
           darkenGreyout: () => store.darkenGreyout,
           scalePointsOnZoom: () => config.scalePointsOnZoom,
           maxPointSize: () => store.maxPointSize,
-          renderOnlySelected: reglInstance.prop<{ renderOnlySelected: boolean }, 'renderOnlySelected'>('renderOnlySelected'),
-          renderOnlyUnselected: reglInstance.prop<{ renderOnlyUnselected: boolean }, 'renderOnlyUnselected'>('renderOnlyUnselected'),
+          skipSelected: reglInstance.prop<{ skipSelected: boolean }, 'skipSelected'>('skipSelected'),
+          skipUnselected: reglInstance.prop<{ skipUnselected: boolean }, 'skipUnselected'>('skipUnselected'),
         },
         blend: {
           enable: true,
@@ -548,12 +548,12 @@ export class Points extends CoreModule {
     // Render in layers: unselected points first (behind), then selected points (in front)
     if (store.selectedIndices && store.selectedIndices.length > 0) {
       // First draw unselected points (they will appear behind)
-      this.drawCommand?.({ renderOnlySelected: false, renderOnlyUnselected: true })
+      this.drawCommand?.({ skipSelected: true, skipUnselected: false })
       // Then draw selected points (they will appear in front)
-      this.drawCommand?.({ renderOnlySelected: true, renderOnlyUnselected: false })
+      this.drawCommand?.({ skipSelected: false, skipUnselected: true })
     } else {
       // If no selection, draw all points
-      this.drawCommand?.({ renderOnlySelected: false, renderOnlyUnselected: false })
+      this.drawCommand?.({ skipSelected: false, skipUnselected: false })
     }
     if ((renderHoveredPointRing) && store.hoveredPoint) {
       this.drawHighlightedCommand?.({
