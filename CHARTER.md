@@ -30,25 +30,21 @@ cosmos.gl is a browser-native, GPU-accelerated force-directed graph layout and r
 
 ## **Section 2: Relationship with OpenJS Foundation CPC**
 
-Technical leadership of the cosmos.gl project is delegated to the cosmos.gl Technical Steering Committee (TSC) by the OpenJS Cross Project Council (CPC). The TSC is also responsible for deciding how to allocate earmarked funds it might receive through the Foundation. Amendments to this charter require approval from both the CPC, through its [decision-making process](https://github.com/openjs-foundation/cross-project-council/blob/master/CPC-CHARTER.md#section-9-decision-making), and the TSC.
+Technical leadership of the cosmos.gl project is delegated to the cosmos.gl Technical Steering Committee (TSC) by the OpenJS Cross Project Council (CPC). Amendments to this charter require approval from both the CPC, through its [decision-making process](https://github.com/openjs-foundation/cross-project-council/blob/master/CPC-CHARTER.md#section-9-decision-making), and the TSC.
 
-### **2.1 Other Formal Project Relationships**
+## **Section 3: Technical Steering Committee (TSC)**
 
-Section Intentionally Left Blank.
-
-## **Section 3: cosmos.gl TSC Governing Body**
-
-TSC members can be either regular members or voting members. Regular members can attend meetings and participate in TSC discussions, but do not vote. Voting members can do everything regular members can do, and also have the ability to cast votes when consensus is not reached on an issue.
+TSC members may attend meetings, participate in discussions, and vote on all matters before the TSC.
 
 TSC memberships are not time-limited. There is no maximum size of the TSC. 
 
-There is no specific set of requirements or qualifications for TSC membership beyond these rules. The TSC may add additional voting members to the TSC by a standard TSC motion. A TSC member can be removed from the TSC by voluntary resignation or by a standard TSC motion. A standard TSC motion can be used to change a regular TSC member to a voting TSC member, or to change a voting TSC member to a regular TSC member.
+There is no specific set of requirements or qualifications for TSC membership beyond these rules. A TSC member can be removed from the TSC by voluntary resignation or by a standard TSC motion.
 
-The TSC shall meet regularly using tools that enable participation by the community. The meeting shall be directed by the TSC Chairperson. Responsibility for directing individual meetings may be delegated by the TSC Chairperson to any other TSC voting member. Minutes or an appropriate recording shall be taken and made available to the community through accessible public postings.
+The TSC shall meet regularly using tools that enable participation by the community. The meeting shall be directed by the TSC chairperson. Responsibility for directing individual meetings may be delegated by the TSC chairperson to any other TSC member. Minutes or an appropriate recording shall be taken and made available to the community through accessible public postings.
 
-TSC voting members are expected to regularly participate in TSC activities.
+TSC members are expected to regularly participate in TSC activities.
 
-A TSC voting member is automatically converted to a TSC regular member if they do not participate in three consecutive TSC votes.
+The TSC chairperson is elected by a simple majority vote of all TSC members. The Chairperson serves until they resign, are removed by a TSC vote, or a new election is called by the TSC.
 
 ## **Section 4: Roles & Responsibilities**
 
@@ -60,9 +56,9 @@ Subject to such policies as may be set by the CPC, the TSC is responsible for al
 - Project governance and process.  
 - GitHub repository hosting.  
 - Conduct guidelines.  
-- Maintaining the list of additional Collaborators.  
+- Maintaining the list of additional collaborators.  
 - Development process and any coding standards.  
-- Mediating technical conflicts between Collaborators or Foundation projects.
+- Mediating technical conflicts between collaborators or foundation projects.
 
 The TSC will define cosmos.gl project’s release vehicles.
 
@@ -74,16 +70,15 @@ The TSC and entire technical community will follow any processes as may be speci
 
 ### **Section 4.2: Decision-making, Voting, and/or Elections**
 
-For internal project decisions, Collaborators shall operate under Lazy Consensus. The TSC shall establish appropriate guidelines for implementing Lazy Consensus (e.g. expected notification and review time periods) within the development process.
+Project decisions shall operate under a model of Lazy Consensus by default. The TSC shall define appropriate guidelines for implementing Lazy Consensus (e.g., notification periods, review windows) within the development process.
 
-The TSC follows a [Consensus Seeking](https://en.wikipedia.org/wiki/Consensus-seeking_decision-making) decision making model among voting members. When an agenda item has appeared to reach a consensus the moderator will ask "Does anyone object?" as a final call for dissent from the consensus.
+When consensus cannot be reached, the TSC shall decide via public voting.
 
-For all votes, the winning candidate option is the one that wins a simple majority of all TSC voting members in every head-to-head election against each of the other candidates. A TSC voting member may choose to participate in any vote through abstention. As long as a vote is open, TSC voting members' choices must not be disclosed, to avoid influencing other voting members.
+Each vote presents the available options in a format that supports clear expression of member preferences—this may include polls, emoji reactions, checklists, or comparable methods. TSC members may vote for one or more options or abstain. Unless otherwise specified, the winning option is the one that receives the greatest support among participating members.
 
-## **Section 4.3: Other Project Roles**
-
-Section Intentionally Left Blank.
+For decisions involving three or more options, the TSC may optionally conduct pairwise comparisons between all candidates. In such cases, the winner is the candidate who secures a simple majority against every other candidate in head-to-head matchups (Condorcet winner). All votes are public, and voting activity may be adjusted until the close of the voting period.
 
 ## **Section 5: Definitions**
+### **Agenda Item**
 
-Section Intentionally Left Blank.  
+An agenda item is a specific topic, proposal, or issue scheduled for discussion or decision during a TSC meeting. Examples include proposed technical changes, governance matters, or any subject requiring TSC review or input. Agenda items are published in advance to allow TSC members and the community to prepare for discussion or decision-making.
