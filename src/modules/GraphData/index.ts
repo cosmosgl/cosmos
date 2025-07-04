@@ -3,7 +3,7 @@ import { GraphConfig } from '@/graph/config'
 
 export enum PointShape {
   Circle = 0,
-  Rectangle = 1,
+  Square = 1,
   Triangle = 2,
   Diamond = 3,
   Pentagon = 4,

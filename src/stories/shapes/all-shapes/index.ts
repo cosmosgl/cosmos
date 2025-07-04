@@ -18,7 +18,7 @@ export const allShapes = (): {div: HTMLDivElement; graph: Graph } => {
   // Define distinct colors for each shape
   const shapeColors: [number, number, number][] = [
     [1.0, 0.42, 0.38], // Coral for Circle
-    [0.13, 0.55, 0.45], // Forest Green for Rectangle
+    [0.13, 0.55, 0.45], // Forest Green for Square
     [0.25, 0.32, 0.71], // Royal Blue for Triangle
     [0.96, 0.76, 0.19], // Amber Gold for Diamond
     [0.74, 0.24, 0.45], // Deep Rose for Pentagon

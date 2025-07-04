@@ -14,7 +14,7 @@ const float smoothing = 0.9;
 
 // Shape constants
 const float CIRCLE = 0.0;
-const float RECTANGLE = 1.0;
+const float SQUARE = 1.0;
 const float TRIANGLE = 2.0;
 const float DIAMOND = 3.0;
 const float PENTAGON = 4.0;
@@ -27,7 +27,7 @@ float circleDistance(vec2 p) {
     return dot(p, p);
 }
 
-float rectangleDistance(vec2 p) {
+float squareDistance(vec2 p) {
     vec2 d = abs(p) - vec2(0.8);
     return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
 }
@@ -119,7 +119,7 @@ float crossDistance(vec2 p) {
 }
 
 float getShapeDistance(vec2 p, float shape) {
-    if (shape == RECTANGLE) return rectangleDistance(p);
+    if (shape == SQUARE) return squareDistance(p);
     else if (shape == TRIANGLE) return triangleDistance(p);
     else if (shape == DIAMOND) return diamondDistance(p);
     else if (shape == PENTAGON) return pentagonDistance(p);
