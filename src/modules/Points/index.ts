@@ -34,6 +34,7 @@ export class Points extends CoreModule {
   private colorBuffer: regl.Buffer | undefined
   private sizeFbo: regl.Framebuffer2D | undefined
   private sizeBuffer: regl.Buffer | undefined
+  private shapeBuffer: regl.Buffer | undefined
   private trackedIndicesFbo: regl.Framebuffer2D | undefined
   private trackedPositionsFbo: regl.Framebuffer2D | undefined
   private sampledPointsFbo: regl.Framebuffer2D | undefined
@@ -221,6 +222,10 @@ export class Points extends CoreModule {
           color: {
             buffer: () => this.colorBuffer,
             size: 4,
+          },
+          shape: {
+            buffer: () => this.shapeBuffer,
+            size: 1,
           },
         },
         uniforms: {
@@ -520,6 +525,13 @@ export class Points extends CoreModule {
     })
   }
 
+  public updateShape (): void {
+    const { reglInstance, data } = this
+    if (data.pointsNumber === undefined || data.pointShapes === undefined) return
+    if (!this.shapeBuffer) this.shapeBuffer = reglInstance.buffer(0)
+    this.shapeBuffer(data.pointShapes)
+  }
+
   public updateSampledPointsGrid (): void {
     const { store: { screenSize }, config: { pointSamplingDistance }, reglInstance } = this
     let dist = pointSamplingDistance ?? Math.min(...screenSize) / 2
@@ -544,6 +556,7 @@ export class Points extends CoreModule {
     const { config: { renderHoveredPointRing, pointSize }, store, data } = this
     if (!this.colorBuffer) this.updateColor()
     if (!this.sizeBuffer) this.updateSize()
+    if (!this.shapeBuffer) this.updateShape()
 
     // Render in layers: unselected points first (behind), then selected points (in front)
     if (store.selectedIndices && store.selectedIndices.length > 0) {

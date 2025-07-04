@@ -1,9 +1,22 @@
 import { getRgbaColor, isNumber } from '@/graph/helper'
 import { GraphConfig } from '@/graph/config'
+
+export enum PointShape {
+  Circle = 0,
+  Rectangle = 1,
+  Triangle = 2,
+  Diamond = 3,
+  Pentagon = 4,
+  Hexagon = 5,
+  Star = 6,
+  Cross = 7
+}
+
 export class GraphData {
   public inputPointPositions: Float32Array | undefined
   public inputPointColors: Float32Array | undefined
   public inputPointSizes: Float32Array | undefined
+  public inputPointShapes: Float32Array | undefined
   public inputLinkColors: Float32Array | undefined
   public inputLinkWidths: Float32Array | undefined
   public inputLinkStrength: Float32Array | undefined
@@ -14,6 +27,7 @@ export class GraphData {
   public pointPositions: Float32Array | undefined
   public pointColors: Float32Array | undefined
   public pointSizes: Float32Array | undefined
+  public pointShapes: Float32Array | undefined
 
   public inputLinks: Float32Array | undefined
   public links: Float32Array | undefined
@@ -104,6 +118,30 @@ export class GraphData {
       for (let i = 0; i < this.pointSizes.length; i++) {
         if (!isNumber(this.pointSizes[i])) {
           this.pointSizes[i] = this._config.pointSize
+        }
+      }
+    }
+  }
+
+  /**
+   * Updates the point shapes based on the input data or default shape (Circle).
+   */
+  public updatePointShape (): void {
+    if (this.pointsNumber === undefined) {
+      this.pointShapes = undefined
+      return
+    }
+
+    // Sets point shapes to default values (Circle) if the input is missing or does not match input points number.
+    if (this.inputPointShapes === undefined || this.inputPointShapes.length !== this.pointsNumber) {
+      this.pointShapes = new Float32Array(this.pointsNumber).fill(PointShape.Circle)
+    } else {
+      this.pointShapes = new Float32Array(this.inputPointShapes)
+      const pointShapes = this.pointShapes
+      for (let i = 0; i < pointShapes.length; i++) {
+        const shape = pointShapes[i]
+        if (shape == null || !isNumber(shape) || shape < 0 || shape > 7) {
+          pointShapes[i] = PointShape.Circle
         }
       }
     }
@@ -222,6 +260,7 @@ export class GraphData {
     this.updatePoints()
     this.updatePointColor()
     this.updatePointSize()
+    this.updatePointShape()
 
     this.updateLinks()
     this.updateLinkColor()

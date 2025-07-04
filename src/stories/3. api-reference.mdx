@@ -75,6 +75,39 @@ This method retrieves the current sizes of the graph points that were previously
 
 The returned array contains the processed point sizes used for rendering, including any default values that were applied during processing.
 
+### <a name="set_point_shapes" href="#set_point_shapes">#</a> graph.<b>setPointShapes</b>(<i>pointShapes</i>)
+
+This method sets the shapes for the graph points.
+
+* **`pointShapes`** (Float32Array): A Float32Array representing the shapes of points in the format `[shape1, shape2, ..., shapeN]`, where each `shape` value corresponds to the shape of the point at the same index in the graph's data. Each shape value should be one of the available shape constants:
+
+| Shape Value | Shape Name |
+|-------------|------------|
+| 0 | Circle |
+| 1 | Rectangle |
+| 2 | Triangle |
+| 3 | Diamond |
+| 4 | Pentagon |
+| 5 | Hexagon |
+| 6 | Star |
+| 7 | Cross |
+
+Each shape value in the array specifies the shape of a point using the same order as the points in the graph data. Invalid shape values (outside the range 0-7) will default to Circle (0).
+
+**Example:**
+```javascript
+import { Graph, PointShape } from '@cosmos.gl/graph'
+
+// Create a mixed set of shapes using the PointShape enum
+graph.setPointShapes(new Float32Array([
+  PointShape.Circle,   // Circle for first point
+  PointShape.Star,     // Star for second point
+  PointShape.Triangle, // Triangle for third point
+  PointShape.Hexagon   // Hexagon for fourth point
+]));
+graph.render();
+```
+
 ### <a name="set_links" href="#set_links">#</a> graph.<b>setLinks</b>(<i>links</i>)
 
 This method sets the links (connections) between points in a cosmos.gl graph.
