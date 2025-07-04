@@ -67,6 +67,7 @@ export class Graph {
   private _needsPointPositionsUpdate = false
   private _needsPointColorUpdate = false
   private _needsPointSizeUpdate = false
+  private _needsPointShapeUpdate = false
   private _needsLinksUpdate = false
   private _needsLinkColorUpdate = false
   private _needsLinkWidthUpdate = false
@@ -303,6 +304,7 @@ export class Graph {
     // Point related textures depend on point positions length, so we need to update them
     this._needsPointColorUpdate = true
     this._needsPointSizeUpdate = true
+    this._needsPointShapeUpdate = true
     this._needsPointClusterUpdate = true
     this._needsForceManyBodyUpdate = true
     this._needsForceLinkUpdate = true
@@ -344,6 +346,20 @@ export class Graph {
     if (this._isDestroyed) return
     this.graph.inputPointSizes = pointSizes
     this._needsPointSizeUpdate = true
+  }
+
+  /**
+   * Sets the shapes for the graph points.
+   *
+   * @param {Float32Array} pointShapes - A Float32Array representing the shapes of points in the format [shape1, shape2, ..., shapen],
+   * where `n` is the index of the point and each shape value corresponds to a PointShape enum:
+   * 0 = Circle, 1 = Rectangle, 2 = Triangle, 3 = Diamond, 4 = Pentagon, 5 = Hexagon, 6 = Star, 7 = Cross.
+   * Example: `new Float32Array([0, 1, 2])` sets the first point to Circle, the second point to Rectangle, and the third point to Triangle.
+   */
+  public setPointShapes (pointShapes: Float32Array): void {
+    if (this._isDestroyed) return
+    this.graph.inputPointShapes = pointShapes
+    this._needsPointShapeUpdate = true
   }
 
   /**
@@ -1100,6 +1116,7 @@ export class Graph {
     if (this._needsPointPositionsUpdate) this.points.updatePositions()
     if (this._needsPointColorUpdate) this.points.updateColor()
     if (this._needsPointSizeUpdate) this.points.updateSize()
+    if (this._needsPointShapeUpdate) this.points.updateShape()
 
     if (this._needsLinksUpdate) this.lines.updatePointsBuffer()
     if (this._needsLinkColorUpdate) this.lines.updateColor()
@@ -1117,6 +1134,7 @@ export class Graph {
     this._needsPointPositionsUpdate = false
     this._needsPointColorUpdate = false
     this._needsPointSizeUpdate = false
+    this._needsPointShapeUpdate = false
     this._needsLinksUpdate = false
     this._needsLinkColorUpdate = false
     this._needsLinkWidthUpdate = false
@@ -1412,5 +1430,6 @@ export class Graph {
 }
 
 export type { GraphConfigInterface } from './config'
+export { PointShape } from './modules/GraphData'
 
 export * from './helper'
