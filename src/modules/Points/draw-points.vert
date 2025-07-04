@@ -5,6 +5,7 @@ precision highp float;
 attribute vec2 pointIndices;
 attribute float size;
 attribute vec4 color;
+attribute float shape;
 
 uniform sampler2D positionsTexture;
 uniform sampler2D pointGreyoutStatus;
@@ -27,6 +28,7 @@ uniform bool skipUnselected;
 varying vec2 textureCoords;
 varying vec3 rgbColor;
 varying float alpha;
+varying float pointShape;
 
 float calculatePointSize(float size) {
   float pSize;
@@ -72,6 +74,7 @@ void main() {
 
   rgbColor = color.rgb;
   alpha = color.a * pointOpacity;
+  pointShape = shape;
 
   // Adjust alpha of selected points
   if (greyoutStatus.r > 0.0) {
