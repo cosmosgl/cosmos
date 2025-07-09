@@ -525,7 +525,7 @@ export class Graph {
   public render (simulationAlpha?: number): void {
     if (this._isDestroyed || !this.reglInstance) return
     this.graph.update()
-    const { fitViewOnInit, fitViewDelay, fitViewPadding, fitViewDuration, fitViewByPointsInRect, initialZoomLevel } = this.config
+    const { fitViewOnInit, fitViewDelay, fitViewPadding, fitViewDuration, fitViewByPointsInRect, fitViewByPointIndices, initialZoomLevel } = this.config
     if (!this.graph.pointsNumber && !this.graph.linksNumber) {
       this.stopFrames()
       select(this.canvas).style('cursor', null)
@@ -540,7 +540,8 @@ export class Graph {
     // If `initialZoomLevel` is set, we don't need to fit the view
     if (this._isFirstRenderAfterInit && fitViewOnInit && initialZoomLevel === undefined) {
       this._fitViewOnInitTimeoutID = window.setTimeout(() => {
-        if (fitViewByPointsInRect) this.setZoomTransformByPointPositions(fitViewByPointsInRect, fitViewDuration, undefined, fitViewPadding)
+        if (fitViewByPointIndices) this.fitViewByPointIndices(fitViewByPointIndices, fitViewDuration, fitViewPadding)
+        else if (fitViewByPointsInRect) this.setZoomTransformByPointPositions(fitViewByPointsInRect, fitViewDuration, undefined, fitViewPadding)
         else this.fitView(fitViewDuration, fitViewPadding)
       }, fitViewDelay)
     }

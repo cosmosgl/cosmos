@@ -493,6 +493,12 @@ export interface GraphConfigInterface {
    */
   fitViewByPointsInRect?: [[number, number], [number, number]] | [number, number][];
   /**
+   * When `fitViewOnInit` is set to `true`, fits the view to show only the specified points by their indices.
+   * Takes precedence over `fitViewByPointsInRect` when both are provided.
+   * Default: `undefined`
+   */
+  fitViewByPointIndices?: number[];
+  /**
    * Providing a `randomSeed` value allows you to control
    * the randomness of the layout across different simulation runs.
    * It is useful when you want the graph to always look the same on same datasets.
@@ -605,6 +611,7 @@ export class GraphConfig implements GraphConfigInterface {
   public fitViewPadding = defaultConfigValues.fitViewPadding
   public fitViewDuration = defaultConfigValues.fitViewDuration
   public fitViewByPointsInRect = undefined
+  public fitViewByPointIndices = undefined
 
   public randomSeed = undefined
   public pointSamplingDistance = defaultConfigValues.pointSamplingDistance
