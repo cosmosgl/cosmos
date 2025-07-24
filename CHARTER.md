@@ -20,13 +20,14 @@ cosmos.gl is a browser-native, GPU-accelerated force-directed graph layout and r
 ### **1.1: In-scope**
 
 - GPU-accelerated graph algorithms  
-- WebGL-based rendering of large-scale graph structures  
+- WebGL- and WebGPU-based rendering of large-scale network graph and machine learning embeddings  
 - Browser-native integration with frontend tooling and workflows
 
 ### **1.2: Out-of-Scope**
 
-- Full-fledged graph analytics  
-- Backend data processing and pipelines
+- Server-side computation, backend data processing and pipelines
+- Native desktop or mobile applications (outside browser environment)
+- Direct integration with domain-specific tools
 
 ## **Section 2: Relationship with OpenJS Foundation CPC**
 
@@ -44,29 +45,13 @@ The TSC shall meet regularly using tools that enable participation by the commun
 
 TSC members are expected to regularly participate in TSC activities.
 
-The TSC chairperson is elected by a simple majority vote of all TSC members. The Chairperson serves until they resign, are removed by a TSC vote, or a new election is called by the TSC.
+The TSC chairperson is elected by a simple majority vote of all TSC members. The chairperson serves until they resign or are replaced by a TSC vote.
 
 ## **Section 4: Roles & Responsibilities**
-
-Subject to such policies as may be set by the CPC, the TSC is responsible for all technical development within the [cosmos.gl](http://cosmos.gl)  project, including:
-
-- Setting release dates.  
-- Release quality standards.  
-- Technical direction.  
-- Project governance and process.  
-- GitHub repository hosting.  
-- Conduct guidelines.  
-- Maintaining the list of additional collaborators.  
-- Development process and any coding standards.  
-- Mediating technical conflicts between collaborators or foundation projects.
-
-The TSC will define cosmos.gl project’s release vehicles.
+The roles and responsibilities of cosmos.gl's TSC are described in [GOVERNANCE.md](./GOVERNANCE.md).
 
 ### **Section 4.1 Project Operations & Management**
-
-The TSC will establish and maintain a development process for the cosmos.gl project. The development process will establish guidelines for how the developers and community will operate. It will, for example, establish appropriate timelines for TSC review (e.g. agenda items must be published at least a certain number of hours in advance of a TSC meeting).
-
-The TSC and entire technical community will follow any processes as may be specified by the OpenJS Foundation Board relating to the intake and license compliance review of contributions, including the OpenJS Foundation IP Policy.
+The Project Operations & Management processes are defined in [GOVERNANCE.md](./GOVERNANCE.md).
 
 ### **Section 4.2: Decision-making, Voting, and/or Elections**
 
