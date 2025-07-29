@@ -45,7 +45,7 @@ The TSC shall meet regularly using tools that enable participation by the commun
 
 TSC members are expected to regularly participate in TSC activities.
 
-The TSC chairperson is elected by a simple majority vote of all TSC members. The chairperson serves until they resign or are replaced by a TSC vote.
+The TSC chairperson is elected by a simple majority vote of all TSC members. The chairperson serves until they resign or are replaced by a TSC vote. Any TSC member may call for a vote at any time, provided the proposal is made in writing and shared with the full TSC. Votes may be held in meetings or asynchronously using any communication tool commonly used by the TSC.
 
 ## **Section 4: Roles & Responsibilities**
 The roles and responsibilities of cosmos.gl's TSC are described in [GOVERNANCE.md](./GOVERNANCE.md).
