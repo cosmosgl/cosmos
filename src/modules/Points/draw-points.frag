@@ -4,10 +4,20 @@
 precision highp float;
 #endif
 
-// The color and alpha values from the vertex shader
-varying vec3 rgbColor;
-varying float alpha;
+uniform float greyoutOpacity;
+uniform float pointOpacity;
+uniform sampler2D imageAtlasTexture;
+uniform bool darkenGreyout;
+uniform vec4 backgroundColor;
+
+
 varying float pointShape;
+varying float isGreyedOut;
+varying vec4 shapeColor;
+varying vec4 imageAtlasUV;
+varying float shapeSize;
+varying float imageSizeVarying;
+varying float overallSize;
 
 // Smoothing controls the smoothness of the point's edge
 const float smoothing = 0.9;
@@ -21,6 +31,7 @@ const float PENTAGON = 4.0;
 const float HEXAGON = 5.0;
 const float STAR = 6.0;
 const float CROSS = 7.0;
+const float NONE = 8.0;
 
 // Distance functions for different shapes
 float circleDistance(vec2 p) {
@@ -130,22 +141,123 @@ float getShapeDistance(vec2 p, float shape) {
 }
 
 void main() {
-    // Discard the fragment if the point is fully transparent
-    if (alpha == 0.0) { discard; }
+    // Discard the fragment if the point is fully transparent and has no image
+    if (shapeColor.a == 0.0 && imageAtlasUV.x == -1.0) {
+        discard;
+    }
+
+    // Discard the fragment if the point has no shape and no image
+    if (pointShape == NONE && imageAtlasUV.x == -1.0) {
+        discard;
+    }
 
     // Calculate coordinates within the point
     vec2 pointCoord = 2.0 * gl_PointCoord - 1.0;
+
+    vec4 finalShapeColor = vec4(0.0);
+    vec4 finalImageColor = vec4(0.0);
     
-    float opacity;
-    if (pointShape == CIRCLE) {
-        // For circles, use the original distance calculation
-        float pointCenterDistance = dot(pointCoord, pointCoord);
-        opacity = alpha * (1.0 - smoothstep(smoothing, 1.0, pointCenterDistance));
-    } else {
-        // For other shapes, use the shape distance function
-        float shapeDistance = getShapeDistance(pointCoord, pointShape);
-        opacity = alpha * (1.0 - smoothstep(-0.01, 0.01, shapeDistance));
+    // Handle shape rendering with centering logic
+    if (pointShape != NONE) {
+        // Calculate shape coordinates with centering
+        vec2 shapeCoord = pointCoord;
+        if (overallSize > shapeSize && shapeSize > 0.0) {
+            // Shape is smaller than overall size, center it
+            float scale = shapeSize / overallSize;
+            shapeCoord = pointCoord / scale;
+        }
+        
+        float opacity;
+        if (pointShape == CIRCLE) {
+            // For circles, use the original distance calculation
+            float pointCenterDistance = dot(shapeCoord, shapeCoord);
+            opacity = 1.0 - smoothstep(smoothing, 1.0, pointCenterDistance);
+        } else {
+            // For other shapes, use the shape distance function
+            float shapeDistance = getShapeDistance(shapeCoord, pointShape);
+            opacity = 1.0 - smoothstep(-0.01, 0.01, shapeDistance);
+        }
+        opacity *= shapeColor.a;
+
+        finalShapeColor = vec4(shapeColor.rgb, opacity);
     }
 
-    gl_FragColor = vec4(rgbColor, opacity);
+    // Handle image rendering with centering logic
+    if (imageAtlasUV.x != -1.0) {
+        // Calculate image coordinates with centering
+        vec2 imageCoord = pointCoord;
+        if (overallSize > imageSizeVarying && imageSizeVarying > 0.0) {
+            // Image is smaller than overall size, center it
+            float scale = imageSizeVarying / overallSize;
+            imageCoord = pointCoord / scale;
+            
+            // Check if we're outside the valid image area
+            if (abs(imageCoord.x) > 1.0 || abs(imageCoord.y) > 1.0) {
+                // We're outside the image bounds, don't render the image
+                finalImageColor = vec4(0.0);
+            } else {
+                // Sample from texture atlas
+                vec2 atlasUV = mix(imageAtlasUV.xy, imageAtlasUV.zw, (imageCoord + 1.0) * 0.5);
+                vec4 imageColor = texture2D(imageAtlasTexture, atlasUV);
+
+                // Apply the same darken/lighten logic for images as for geometric shapes
+                vec3 finalColor = imageColor.rgb;
+                float finalAlpha = imageColor.a;
+                
+                // Apply greyout logic for images (same as geometric shapes)
+                if (isGreyedOut > 0.0) {
+                    // Make color lighter or darker based on darkenGreyout
+                    float blendFactor = 0.65; // Controls how much to modify (0.0 = original, 1.0 = target color)
+                    
+                    if (darkenGreyout) {
+                        // Darken the color
+                        finalColor = mix(finalColor, vec3(0.2), blendFactor);
+                    } else {
+                        // Lighten the color
+                        finalColor = mix(finalColor, max(backgroundColor.rgb, vec3(0.8)), blendFactor);
+                    }
+                }
+                
+                finalImageColor = vec4(finalColor, finalAlpha);
+            }
+        } else {
+            // Image is same size or larger than overall size, no scaling needed
+            // Sample from texture atlas
+            vec2 atlasUV = mix(imageAtlasUV.xy, imageAtlasUV.zw, (imageCoord + 1.0) * 0.5);
+            vec4 imageColor = texture2D(imageAtlasTexture, atlasUV);
+
+            // Apply the same darken/lighten logic for images as for geometric shapes
+            vec3 finalColor = imageColor.rgb;
+            float finalAlpha = imageColor.a;
+            
+            // Apply greyout logic for images (same as geometric shapes)
+            if (isGreyedOut > 0.0) {
+                // Make color lighter or darker based on darkenGreyout
+                float blendFactor = 0.65; // Controls how much to modify (0.0 = original, 1.0 = target color)
+                
+                if (darkenGreyout) {
+                    // Darken the color
+                    finalColor = mix(finalColor, vec3(0.2), blendFactor);
+                } else {
+                    // Lighten the color
+                    finalColor = mix(finalColor, max(backgroundColor.rgb, vec3(0.8)), blendFactor);
+                }
+            }
+            
+            finalImageColor = vec4(finalColor, finalAlpha);
+        }
+    }
+
+    float finalPointAlpha = max(finalShapeColor.a, finalImageColor.a);
+    if (isGreyedOut > 0.0 && greyoutOpacity != -1.0) {
+        finalPointAlpha *= greyoutOpacity;
+    } else {
+        finalPointAlpha *= pointOpacity;
+    }
+
+    // Blend image color above point color
+    gl_FragColor = vec4(
+        mix(finalShapeColor.rgb, finalImageColor.rgb, finalImageColor.a),
+        finalPointAlpha
+    );
 }
