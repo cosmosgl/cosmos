@@ -20,6 +20,7 @@ import dragPointFrag from '@/graph/modules/Points/drag-point.frag'
 import updateVert from '@/graph/modules/Shared/quad.vert'
 import clearFrag from '@/graph/modules/Shared/clear.frag'
 import { readPixels } from '@/graph/helper'
+import { createAtlasDataFromImageData } from '@/graph/modules/Points/atlas-utils'
 
 export class Points extends CoreModule {
   public currentPositionFbo: regl.Framebuffer2D | undefined
@@ -31,10 +32,16 @@ export class Points extends CoreModule {
   public scaleX: ((x: number) => number) | undefined
   public scaleY: ((y: number) => number) | undefined
   public shouldSkipRescale: boolean | undefined
+  public imageAtlasTexture: regl.Texture2D | undefined
+  public imageCount = 0
   private colorBuffer: regl.Buffer | undefined
   private sizeFbo: regl.Framebuffer2D | undefined
   private sizeBuffer: regl.Buffer | undefined
   private shapeBuffer: regl.Buffer | undefined
+  private imageIndicesBuffer: regl.Buffer | undefined
+  private imageSizesBuffer: regl.Buffer | undefined
+  private imageAtlasCoordsTexture: regl.Texture2D | undefined
+  private imageAtlasCoordsTextureSize: number | undefined
   private trackedIndicesFbo: regl.Framebuffer2D | undefined
   private trackedPositionsFbo: regl.Framebuffer2D | undefined
   private sampledPointsFbo: regl.Framebuffer2D | undefined
@@ -229,6 +236,14 @@ export class Points extends CoreModule {
             buffer: () => this.shapeBuffer,
             size: 1,
           },
+          imageIndex: {
+            buffer: () => this.imageIndicesBuffer,
+            size: 1,
+          },
+          imageSize: {
+            buffer: () => this.imageSizesBuffer,
+            size: 1,
+          },
         },
         uniforms: {
           positionsTexture: () => this.currentPositionFbo,
@@ -248,6 +263,11 @@ export class Points extends CoreModule {
           maxPointSize: () => store.maxPointSize,
           skipSelected: reglInstance.prop<{ skipSelected: boolean }, 'skipSelected'>('skipSelected'),
           skipUnselected: reglInstance.prop<{ skipUnselected: boolean }, 'skipUnselected'>('skipUnselected'),
+          imageAtlasTexture: () => this.imageAtlasTexture,
+          imageAtlasCoords: () => this.imageAtlasCoordsTexture,
+          hasImages: () => this.imageCount > 0,
+          imageCount: () => this.imageCount,
+          imageAtlasCoordsTextureSize: () => this.imageAtlasCoordsTextureSize,
         },
         blend: {
           enable: true,
@@ -534,6 +554,54 @@ export class Points extends CoreModule {
     this.shapeBuffer(data.pointShapes)
   }
 
+  public updateImageIndices (): void {
+    const { reglInstance, data } = this
+    if (data.pointsNumber === undefined || data.pointImageIndices === undefined) return
+    if (!this.imageIndicesBuffer) this.imageIndicesBuffer = reglInstance.buffer(0)
+    this.imageIndicesBuffer(data.pointImageIndices)
+  }
+
+  public updateImageSizes (): void {
+    const { reglInstance, data } = this
+    if (data.pointsNumber === undefined || data.pointImageSizes === undefined) return
+    if (!this.imageSizesBuffer) this.imageSizesBuffer = reglInstance.buffer(0)
+    this.imageSizesBuffer(data.pointImageSizes)
+  }
+
+  public createAtlas (): void {
+    const { reglInstance, data, store } = this
+    if (!this.imageAtlasTexture) this.imageAtlasTexture = reglInstance.texture()
+    if (!this.imageAtlasCoordsTexture) this.imageAtlasCoordsTexture = reglInstance.texture()
+
+    if (!data.inputImageData?.length) {
+      this.imageCount = 0
+      this.imageAtlasCoordsTextureSize = 0
+      return
+    }
+
+    const atlasResult = createAtlasDataFromImageData(data.inputImageData, store.maxPointSize)
+    if (!atlasResult) {
+      console.warn('Failed to create atlas from image data')
+      return
+    }
+
+    this.imageCount = data.inputImageData.length
+    const { atlasData, atlasSize, atlasCoords, atlasCoordsSize } = atlasResult
+    this.imageAtlasCoordsTextureSize = atlasCoordsSize
+
+    this.imageAtlasTexture({
+      data: atlasData,
+      shape: [atlasSize, atlasSize, 4],
+      type: 'uint8',
+    })
+
+    this.imageAtlasCoordsTexture({
+      data: atlasCoords,
+      shape: [atlasCoordsSize, atlasCoordsSize, 4],
+      type: 'float',
+    })
+  }
+
   public updateSampledPointsGrid (): void {
     const { store: { screenSize }, config: { pointSamplingDistance }, reglInstance } = this
     let dist = pointSamplingDistance ?? Math.min(...screenSize) / 2
@@ -559,6 +627,9 @@ export class Points extends CoreModule {
     if (!this.colorBuffer) this.updateColor()
     if (!this.sizeBuffer) this.updateSize()
     if (!this.shapeBuffer) this.updateShape()
+    if (!this.imageIndicesBuffer) this.updateImageIndices()
+    if (!this.imageSizesBuffer) this.updateImageSizes()
+    if (!this.imageAtlasCoordsTexture || !this.imageAtlasTexture) this.createAtlas()
 
     // Render in layers: unselected points first (behind), then selected points (in front)
     if (store.selectedIndices && store.selectedIndices.length > 0) {
