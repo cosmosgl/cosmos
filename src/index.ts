@@ -68,6 +68,7 @@ export class Graph {
   private isPointColorUpdateNeeded = false
   private isPointSizeUpdateNeeded = false
   private isPointShapeUpdateNeeded = false
+  private isPointImageIndicesUpdateNeeded = false
   private isLinksUpdateNeeded = false
   private isLinkColorUpdateNeeded = false
   private isLinkWidthUpdateNeeded = false
@@ -76,6 +77,7 @@ export class Graph {
   private isForceManyBodyUpdateNeeded = false
   private isForceLinkUpdateNeeded = false
   private isForceCenterUpdateNeeded = false
+  private isPointImageSizesUpdateNeeded = false
 
   private _isDestroyed = false
 
@@ -305,6 +307,7 @@ export class Graph {
     this.isPointColorUpdateNeeded = true
     this.isPointSizeUpdateNeeded = true
     this.isPointShapeUpdateNeeded = true
+    this.isPointImageIndicesUpdateNeeded = true
     this.isPointClusterUpdateNeeded = true
     this.isForceManyBodyUpdateNeeded = true
     this.isForceLinkUpdateNeeded = true
@@ -353,13 +356,68 @@ export class Graph {
    *
    * @param {Float32Array} pointShapes - A Float32Array representing the shapes of points in the format [shape1, shape2, ..., shapen],
    * where `n` is the index of the point and each shape value corresponds to a PointShape enum:
-   * 0 = Circle, 1 = Square, 2 = Triangle, 3 = Diamond, 4 = Pentagon, 5 = Hexagon, 6 = Star, 7 = Cross.
+   * 0 = Circle, 1 = Square, 2 = Triangle, 3 = Diamond, 4 = Pentagon, 5 = Hexagon, 6 = Star, 7 = Cross, 8 = None.
    * Example: `new Float32Array([0, 1, 2])` sets the first point to Circle, the second point to Square, and the third point to Triangle.
+   *
+   * Note: When no shapes are explicitly set:
+   * - If image data is provided via `setImageData()`, the default shape will be `None` (8) to avoid visual clutter.
+   * - If no image data is provided, the default shape will be `Circle` (0).
+   *
+   * Images are rendered above shapes, so if you explicitly set shapes to values other than `None` (8),
+   * both shapes and images will be visible (shapes underneath, images on top).
    */
   public setPointShapes (pointShapes: Float32Array): void {
     if (this._isDestroyed) return
     this.graph.inputPointShapes = pointShapes
     this.isPointShapeUpdateNeeded = true
+  }
+
+  /**
+   * Sets the images for the graph points using ImageData objects.
+   * Images are rendered above shapes and will be visible even when shapes are present.
+   * To use images, provide image indices via setPointImageIndices().
+   *
+   * Note: When images are set, the default point shapes automatically change to `None` (8) to avoid visual clutter.
+   * Images are rendered above shapes, so if you explicitly set shapes to values other than `None` (8),
+   * both shapes and images will be visible (shapes underneath, images on top).
+   *
+   * @param {ImageData[]} imageDataArray - Array of ImageData objects to use as point images.
+   * Example: `setImageData([imageData1, imageData2, imageData3])`
+   */
+  public setImageData (imageDataArray: ImageData[]): void {
+    if (this._isDestroyed || !this.points) return
+    this.graph.inputImageData = imageDataArray
+    this.points.createAtlas()
+
+    /* When image data is set, the default shape will be None. Need to update the shape */
+    this._needsPointShapeUpdate = true
+  }
+
+  /**
+   * Sets which image each point should use from the images array.
+   * Images are rendered above shapes.
+   *
+   * @param {Float32Array} imageIndices - A Float32Array representing which image each point uses in the format [index1, index2, ..., indexn],
+   * where `n` is the index of the point and each value is an index into the images array provided to `setImageData`.
+   * Example: `new Float32Array([0, 1, 0])` sets the first point to use image 0, second point to use image 1, third point to use image 0.
+   */
+  public setPointImageIndices (imageIndices: Float32Array): void {
+    if (this._isDestroyed) return
+    this.graph.inputPointImageIndices = imageIndices
+    this.isPointImageIndicesUpdateNeeded = true
+  }
+
+  /**
+   * Sets the sizes for the point images.
+   *
+   * @param {Float32Array} imageSizes - A Float32Array representing the sizes of point images in the format [size1, size2, ..., sizen],
+   * where `n` is the index of the point.
+   * Example: `new Float32Array([10, 20, 30])` sets the first image to size 10, the second image to size 20, and the third image to size 30.
+   */
+  public setPointImageSizes (imageSizes: Float32Array): void {
+    if (this._isDestroyed) return
+    this.graph.inputPointImageSizes = imageSizes
+    this.isPointImageSizesUpdateNeeded = true
   }
 
   /**
@@ -1120,6 +1178,8 @@ export class Graph {
     if (this.isPointColorUpdateNeeded) this.points.updateColor()
     if (this.isPointSizeUpdateNeeded) this.points.updateSize()
     if (this.isPointShapeUpdateNeeded) this.points.updateShape()
+    if (this.isPointImageIndicesUpdateNeeded) this.points.updateImageIndices()
+    if (this.isPointImageSizesUpdateNeeded) this.points.updateImageSizes()
 
     if (this.isLinksUpdateNeeded) this.lines.updatePointsBuffer()
     if (this.isLinkColorUpdateNeeded) this.lines.updateColor()
@@ -1138,6 +1198,8 @@ export class Graph {
     this.isPointColorUpdateNeeded = false
     this.isPointSizeUpdateNeeded = false
     this.isPointShapeUpdateNeeded = false
+    this.isPointImageIndicesUpdateNeeded = false
+    this.isPointImageSizesUpdateNeeded = false
     this.isLinksUpdateNeeded = false
     this.isLinkColorUpdateNeeded = false
     this.isLinkWidthUpdateNeeded = false

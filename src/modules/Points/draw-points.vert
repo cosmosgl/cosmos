@@ -6,17 +6,19 @@ attribute vec2 pointIndices;
 attribute float size;
 attribute vec4 color;
 attribute float shape;
+attribute float imageIndex;
+attribute float imageSize;
 
 uniform sampler2D positionsTexture;
 uniform sampler2D pointGreyoutStatus;
+uniform sampler2D imageAtlasCoords;
 uniform float ratio;
 uniform mat3 transformationMatrix;
 uniform float pointsTextureSize;
 uniform float sizeScale;
 uniform float spaceSize;
 uniform vec2 screenSize;
-uniform float greyoutOpacity;
-uniform float pointOpacity;
+
 uniform vec4 greyoutColor;
 uniform vec4 backgroundColor;
 uniform bool scalePointsOnZoom;
@@ -24,11 +26,17 @@ uniform float maxPointSize;
 uniform bool isDarkenGreyout;
 uniform bool skipSelected;
 uniform bool skipUnselected;
+uniform bool hasImages;
+uniform float imageCount;
+uniform float imageAtlasCoordsTextureSize;
 
-varying vec2 textureCoords;
-varying vec3 rgbColor;
-varying float alpha;
 varying float pointShape;
+varying float isGreyedOut;
+varying vec4 shapeColor;
+varying vec4 imageAtlasUV;
+varying float shapeSize;
+varying float imageSizeVarying;
+varying float overallSize;
 
 float calculatePointSize(float size) {
   float pSize;
@@ -41,11 +49,10 @@ float calculatePointSize(float size) {
   return min(pSize, maxPointSize * ratio);
 }
 
-void main() {  
-  textureCoords = pointIndices;
-  
+void main() {    
   // Check greyout status for selective rendering
-  vec4 greyoutStatus = texture2D(pointGreyoutStatus, (textureCoords + 0.5) / pointsTextureSize);
+  vec4 greyoutStatus = texture2D(pointGreyoutStatus, (pointIndices + 0.5) / pointsTextureSize);
+  isGreyedOut = greyoutStatus.r;
   bool isSelected = greyoutStatus.r == 0.0;
   
   // Discard point based on rendering mode
@@ -61,7 +68,7 @@ void main() {
   }
   
   // Position
-  vec4 pointPosition = texture2D(positionsTexture, (textureCoords + 0.5) / pointsTextureSize);
+  vec4 pointPosition = texture2D(positionsTexture, (pointIndices + 0.5) / pointsTextureSize);
   vec2 point = pointPosition.rg;
 
   // Transform point position to normalized device coordinates
@@ -70,32 +77,51 @@ void main() {
   vec3 finalPosition = transformationMatrix * vec3(normalizedPosition, 1);
   gl_Position = vec4(finalPosition.rg, 0, 1);
 
-  gl_PointSize = calculatePointSize(size * sizeScale);
+  // Calculate sizes for shape and image
+  float shapeSizeValue = calculatePointSize(size * sizeScale);
+  float imageSizeValue = calculatePointSize(imageSize * sizeScale);
+  
+  // Use the larger of the two sizes for the overall point size
+  float overallSizeValue = max(shapeSizeValue, imageSizeValue);
+  gl_PointSize = overallSizeValue;
 
-  rgbColor = color.rgb;
-  alpha = color.a * pointOpacity;
+  // Pass size information to fragment shader
+  shapeSize = shapeSizeValue;
+  imageSizeVarying = imageSizeValue;
+  overallSize = overallSizeValue;
+
+  shapeColor = color;
   pointShape = shape;
 
   // Adjust alpha of selected points
-  if (greyoutStatus.r > 0.0) {
+  if (isGreyedOut > 0.0) {
     if (greyoutColor[0] != -1.0) {
-      rgbColor = greyoutColor.rgb;
-      alpha = greyoutColor.a;
+      shapeColor = greyoutColor;
     } else {
       // If greyoutColor is not set, make color lighter or darker based on isDarkenGreyout
       float blendFactor = 0.65; // Controls how much to modify (0.0 = original, 1.0 = target color)
       
       if (isDarkenGreyout) {
         // Darken the color
-        rgbColor = mix(rgbColor, vec3(0.2), blendFactor);
+        shapeColor.rgb = mix(shapeColor.rgb, vec3(0.2), blendFactor);
       } else {
         // Lighten the color
-        rgbColor = mix(rgbColor, max(backgroundColor.rgb, vec3(0.8)), blendFactor);
+        shapeColor.rgb = mix(shapeColor.rgb, max(backgroundColor.rgb, vec3(0.8)), blendFactor);
       }
     }
-
-    if (greyoutOpacity != -1.0) {
-      alpha *= greyoutOpacity;
-    }
   }
-}
+
+  if (!hasImages || imageIndex < 0.0 || imageIndex >= imageCount) {
+    imageAtlasUV = vec4(-1.0);
+    return;
+  }
+  // Calculate image atlas UV coordinates based on imageIndex
+  float atlasCoordIndex = imageIndex;
+  // Calculate the position in the texture grid
+  float texX = mod(atlasCoordIndex, imageAtlasCoordsTextureSize);
+  float texY = floor(atlasCoordIndex / imageAtlasCoordsTextureSize);
+  // Convert to texture coordinates (0.0 to 1.0)
+  vec2 atlasCoordTexCoord = (vec2(texX, texY) + 0.5) / imageAtlasCoordsTextureSize;
+  vec4 atlasCoords = texture2D(imageAtlasCoords, atlasCoordTexCoord);
+  imageAtlasUV = atlasCoords;
+} 

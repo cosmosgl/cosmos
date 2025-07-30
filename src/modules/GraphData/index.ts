@@ -9,7 +9,8 @@ export enum PointShape {
   Pentagon = 4,
   Hexagon = 5,
   Star = 6,
-  Cross = 7
+  Cross = 7,
+  None = 8
 }
 
 export class GraphData {
@@ -17,6 +18,9 @@ export class GraphData {
   public inputPointColors: Float32Array | undefined
   public inputPointSizes: Float32Array | undefined
   public inputPointShapes: Float32Array | undefined
+  public inputImageData: ImageData[] | undefined
+  public inputPointImageIndices: Float32Array | undefined
+  public inputPointImageSizes: Float32Array | undefined
   public inputLinkColors: Float32Array | undefined
   public inputLinkWidths: Float32Array | undefined
   public inputLinkStrength: Float32Array | undefined
@@ -28,6 +32,8 @@ export class GraphData {
   public pointColors: Float32Array | undefined
   public pointSizes: Float32Array | undefined
   public pointShapes: Float32Array | undefined
+  public pointImageIndices: Float32Array | undefined
+  public pointImageSizes: Float32Array | undefined
 
   public inputLinks: Float32Array | undefined
   public links: Float32Array | undefined
@@ -124,7 +130,10 @@ export class GraphData {
   }
 
   /**
-   * Updates the point shapes based on the input data or default shape (Circle).
+   * Updates the point shapes based on the input data or default shape.
+   * Default behavior: Circle (0) if no images, None (8) if images are present to avoid visual clutter.
+   * Images are rendered above shapes, so if shapes are explicitly set to values other than None (8),
+   * both shapes and images will be visible (shapes underneath, images on top).
    */
   public updatePointShape (): void {
     if (this.pointsNumber === undefined) {
@@ -132,16 +141,69 @@ export class GraphData {
       return
     }
 
-    // Sets point shapes to default values (Circle) if the input is missing or does not match input points number.
+    // Determine default shape: None if images are available, Circle otherwise
+    // This prevents visual clutter by hiding shapes when images are present
+    // Note: Images are rendered above shapes, so if shapes are explicitly set to values other than None (8),
+    // both shapes and images will be visible (shapes underneath, images on top)
+    const imageCount = this.inputImageData?.length ?? 0
+    const defaultShape = imageCount > 0 ? PointShape.None : PointShape.Circle
+
+    // Sets point shapes to default values if the input is missing or does not match input points number.
     if (this.inputPointShapes === undefined || this.inputPointShapes.length !== this.pointsNumber) {
-      this.pointShapes = new Float32Array(this.pointsNumber).fill(PointShape.Circle)
+      this.pointShapes = new Float32Array(this.pointsNumber).fill(defaultShape)
     } else {
       this.pointShapes = new Float32Array(this.inputPointShapes)
       const pointShapes = this.pointShapes
       for (let i = 0; i < pointShapes.length; i++) {
         const shape = pointShapes[i]
-        if (shape == null || !isNumber(shape) || shape < 0 || shape > 7) {
-          pointShapes[i] = PointShape.Circle
+        if (shape == null || !isNumber(shape) || shape < 0 || shape > 8) {
+          pointShapes[i] = defaultShape
+        }
+      }
+    }
+  }
+
+  /**
+   * Updates the point image indices based on the input data or default value (-1 for no image).
+   */
+  public updatePointImageIndices (): void {
+    if (this.pointsNumber === undefined) {
+      this.pointImageIndices = undefined
+      return
+    }
+
+    // Sets point image indices to default values (0) if the input is missing or does not match input points number.
+    if (this.inputPointImageIndices === undefined || this.inputPointImageIndices.length !== this.pointsNumber) {
+      this.pointImageIndices = new Float32Array(this.pointsNumber).fill(-1)
+    } else {
+      this.pointImageIndices = new Float32Array(this.inputPointImageIndices)
+      const pointImageIndices = this.pointImageIndices
+      for (let i = 0; i < pointImageIndices.length; i++) {
+        const imageIndex = pointImageIndices[i]
+        if (imageIndex == null || !isNumber(imageIndex) || imageIndex < 0) {
+          pointImageIndices[i] = -1
+        }
+      }
+    }
+  }
+
+  /**
+   * Updates the point image sizes based on the input data or default to point sizes.
+   */
+  public updatePointImageSizes (): void {
+    if (this.pointsNumber === undefined) {
+      this.pointImageSizes = undefined
+      return
+    }
+
+    // Sets point image sizes to point sizes if the input is missing or does not match input points number.
+    if (this.inputPointImageSizes === undefined || this.inputPointImageSizes.length !== this.pointsNumber) {
+      this.pointImageSizes = this.pointSizes ? new Float32Array(this.pointSizes) : new Float32Array(this.pointsNumber).fill(this._config.pointSize)
+    } else {
+      this.pointImageSizes = new Float32Array(this.inputPointImageSizes)
+      for (let i = 0; i < this.pointImageSizes.length; i++) {
+        if (!isNumber(this.pointImageSizes[i])) {
+          this.pointImageSizes[i] = this.pointSizes?.[i] ?? this._config.pointSize
         }
       }
     }
@@ -261,6 +323,8 @@ export class GraphData {
     this.updatePointColor()
     this.updatePointSize()
     this.updatePointShape()
+    this.updatePointImageIndices()
+    this.updatePointImageSizes()
 
     this.updateLinks()
     this.updateLinkColor()
