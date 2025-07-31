@@ -27,6 +27,7 @@ export const createStory: (storyFunction: () => {
       const div = document.createElement('div')
       div.style.height = '100vh'
       div.style.width = '100%'
+      div.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666;">Loading story...</div>'
 
       result.then((story) => {
         args.graph = story.graph
