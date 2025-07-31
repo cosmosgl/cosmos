@@ -91,8 +91,15 @@ This method sets the shapes for the graph points.
 | 5 | Hexagon |
 | 6 | Star |
 | 7 | Cross |
+| 8 | None |
 
-Each shape value in the array specifies the shape of a point using the same order as the points in the graph data. Invalid shape values (outside the range 0-7) will default to Circle (0).
+Each shape value in the array specifies the shape of a point using the same order as the points in the graph data. Invalid shape values (outside the range 0-8) will default to Circle (0).
+
+**Note:** When no shapes are explicitly set:
+* If image data is provided via `setImageData()`, the default shape will be `None` (8) to avoid visual clutter.
+* If no image data is provided, the default shape will be `Circle` (0).
+
+Images are rendered above shapes, so if you explicitly set shapes to values other than `None` (8), both shapes and images will be visible (shapes underneath, images on top).
 
 **Example:**
 ```javascript
@@ -107,6 +114,50 @@ graph.setPointShapes(new Float32Array([
 ]));
 graph.render();
 ```
+
+### <a name="set_image_data" href="#set_image_data">#</a> graph.<b>setImageData</b>(<i>imageDataArray</i>)
+
+This method sets the images for the graph points using [ImageData](https://developer.mozilla.org/en-US/docs/Web/API/ImageData) objects. Images are rendered above shapes. To use images, provide image indices via `setPointImageIndices()`.
+
+**Note:** When images are set, the default point shapes automatically change to `None` (8) to avoid visual clutter. Images are rendered above shapes, so if you explicitly set shapes to values other than `None` (8), both shapes and images will be visible (shapes underneath, images on top).
+
+* **`imageDataArray`** (ImageData[]): Array of ImageData objects to use as point images.
+
+**Example:**
+```javascript
+// Create ImageData objects from canvas or other sources
+const imageData1 = canvas1.getContext('2d').getImageData(0, 0, 32, 32);
+const imageData2 = canvas2.getContext('2d').getImageData(0, 0, 32, 32);
+
+// Set the images for the graph
+graph.setImageData([imageData1, imageData2]);
+
+// Set which image each point should use (0 = imageData1, 1 = imageData2)
+graph.setPointImageIndices(new Float32Array([0, 1, 0, 1]));
+
+// To show shapes with images (shapes underneath, images on top)
+graph.setPointShapes(new Float32Array([0, 1, 2, 3])); // Circle, Square, Triangle, Diamond
+
+graph.render();
+```
+
+This example sets up two images and assigns them to four points: the first and third points use imageData1, while the second and fourth points use imageData2. The shapes are also set to show both shapes and images together.
+
+### <a name="set_point_image_indices" href="#set_point_image_indices">#</a> graph.<b>setPointImageIndices</b>(<i>imageIndices</i>)
+
+This method sets which image each point should use from the images array provided to `setImageData()`. Images are rendered above shapes.
+
+* **`imageIndices`** (Float32Array): A Float32Array representing which image each point uses in the format `[index1, index2, ..., indexN]`, where each value is an index into the images array provided to `setImageData()`.
+* **Valid indices**: Use 0 for the first image, 1 for the second image, etc. Invalid or negative indices will default to -1 (no image).
+* **Default behavior**: When no image indices are provided, all points default to -1 (no image).
+
+### <a name="set_point_image_sizes" href="#set_point_image_sizes">#</a> graph.<b>setPointImageSizes</b>(<i>imageSizes</i>)
+
+This method sets the sizes for the point images in the graph.
+
+* **`imageSizes`** (Float32Array): A Float32Array representing the sizes of point images in the format `[size1, size2, ..., sizeN]`, where each `size` value corresponds to the size of the image for the point at the same index in the graph's data.
+
+Each size value in the array specifies the size of a point image using the same order as the points in the graph data. The sizes are applied to images that have been set using `setImageData()` and referenced via `setPointImageIndices()`.
 
 ### <a name="set_links" href="#set_links">#</a> graph.<b>setLinks</b>(<i>links</i>)
 
