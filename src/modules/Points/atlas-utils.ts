@@ -59,6 +59,7 @@ export function createAtlasDataFromImageData (
   const atlasCoords = new Float32Array(atlasCoordsSize * atlasCoordsSize * 4).fill(-1)
 
   // Step 7: Pack each image into the atlas grid
+  // Uses nearest neighbor sampling for images larger than maxDimension
   for (const [index, imageData] of imageDataArray.entries()) {
     // Extract image dimensions
     const originalWidth = imageData.width

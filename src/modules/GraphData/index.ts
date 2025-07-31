@@ -172,7 +172,7 @@ export class GraphData {
       return
     }
 
-    // Sets point image indices to default values (0) if the input is missing or does not match input points number.
+    // Sets point image indices to -1 if input is missing or doesn't match points count
     if (this.inputPointImageIndices === undefined || this.inputPointImageIndices.length !== this.pointsNumber) {
       this.pointImageIndices = new Float32Array(this.pointsNumber).fill(-1)
     } else {

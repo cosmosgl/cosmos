@@ -38,6 +38,24 @@ float circleDistance(vec2 p) {
     return dot(p, p);
 }
 
+// Function to apply greyout logic to image colors
+vec4 applyGreyoutToImage(vec4 imageColor) {
+    vec3 finalColor = imageColor.rgb;
+    float finalAlpha = imageColor.a;
+    
+    if (isGreyedOut > 0.0) {
+        float blendFactor = 0.65; // Controls how much to modify (0.0 = original, 1.0 = target color)
+        
+        if (darkenGreyout) {
+            finalColor = mix(finalColor, vec3(0.2), blendFactor);
+        } else {
+            finalColor = mix(finalColor, max(backgroundColor.rgb, vec3(0.8)), blendFactor);
+        }
+    }
+    
+    return vec4(finalColor, finalAlpha);
+}
+
 float squareDistance(vec2 p) {
     vec2 d = abs(p) - vec2(0.8);
     return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
@@ -199,52 +217,14 @@ void main() {
                 // Sample from texture atlas
                 vec2 atlasUV = mix(imageAtlasUV.xy, imageAtlasUV.zw, (imageCoord + 1.0) * 0.5);
                 vec4 imageColor = texture2D(imageAtlasTexture, atlasUV);
-
-                // Apply the same darken/lighten logic for images as for geometric shapes
-                vec3 finalColor = imageColor.rgb;
-                float finalAlpha = imageColor.a;
-                
-                // Apply greyout logic for images (same as geometric shapes)
-                if (isGreyedOut > 0.0) {
-                    // Make color lighter or darker based on darkenGreyout
-                    float blendFactor = 0.65; // Controls how much to modify (0.0 = original, 1.0 = target color)
-                    
-                    if (darkenGreyout) {
-                        // Darken the color
-                        finalColor = mix(finalColor, vec3(0.2), blendFactor);
-                    } else {
-                        // Lighten the color
-                        finalColor = mix(finalColor, max(backgroundColor.rgb, vec3(0.8)), blendFactor);
-                    }
-                }
-                
-                finalImageColor = vec4(finalColor, finalAlpha);
+                finalImageColor = applyGreyoutToImage(imageColor);
             }
         } else {
             // Image is same size or larger than overall size, no scaling needed
             // Sample from texture atlas
             vec2 atlasUV = mix(imageAtlasUV.xy, imageAtlasUV.zw, (imageCoord + 1.0) * 0.5);
             vec4 imageColor = texture2D(imageAtlasTexture, atlasUV);
-
-            // Apply the same darken/lighten logic for images as for geometric shapes
-            vec3 finalColor = imageColor.rgb;
-            float finalAlpha = imageColor.a;
-            
-            // Apply greyout logic for images (same as geometric shapes)
-            if (isGreyedOut > 0.0) {
-                // Make color lighter or darker based on darkenGreyout
-                float blendFactor = 0.65; // Controls how much to modify (0.0 = original, 1.0 = target color)
-                
-                if (darkenGreyout) {
-                    // Darken the color
-                    finalColor = mix(finalColor, vec3(0.2), blendFactor);
-                } else {
-                    // Lighten the color
-                    finalColor = mix(finalColor, max(backgroundColor.rgb, vec3(0.8)), blendFactor);
-                }
-            }
-            
-            finalImageColor = vec4(finalColor, finalAlpha);
+            finalImageColor = applyGreyoutToImage(imageColor);
         }
     }
 
