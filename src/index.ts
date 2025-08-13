@@ -359,13 +359,7 @@ export class Graph {
    * where `n` is the index of the point and each shape value corresponds to a PointShape enum:
    * 0 = Circle, 1 = Square, 2 = Triangle, 3 = Diamond, 4 = Pentagon, 5 = Hexagon, 6 = Star, 7 = Cross, 8 = None.
    * Example: `new Float32Array([0, 1, 2])` sets the first point to Circle, the second point to Square, and the third point to Triangle.
-   *
-   * Note: When no shapes are explicitly set:
-   * - If image data is provided via `setImageData()`, the default shape will be `None` (8) to avoid visual clutter.
-   * - If no image data is provided, the default shape will be `Circle` (0).
-   *
-   * Images are rendered above shapes, so if you explicitly set shapes to values other than `None` (8),
-   * both shapes and images will be visible (shapes underneath, images on top).
+   * Images are rendered above shapes.
    */
   public setPointShapes (pointShapes: Float32Array): void {
     if (this._isDestroyed) return
@@ -375,12 +369,8 @@ export class Graph {
 
   /**
    * Sets the images for the graph points using ImageData objects.
-   * Images are rendered above shapes and will be visible even when shapes are present.
+   * Images are rendered above shapes.
    * To use images, provide image indices via setPointImageIndices().
-   *
-   * Note: When images are set, the default point shapes automatically change to `None` (8) to avoid visual clutter.
-   * Images are rendered above shapes, so if you explicitly set shapes to values other than `None` (8),
-   * both shapes and images will be visible (shapes underneath, images on top).
    *
    * @param {ImageData[]} imageDataArray - Array of ImageData objects to use as point images.
    * Example: `setImageData([imageData1, imageData2, imageData3])`
@@ -389,9 +379,6 @@ export class Graph {
     if (this._isDestroyed || !this.points) return
     this.graph.inputImageData = imageDataArray
     this.points.createAtlas()
-
-    /* When image data is set, the default shape will be None. Need to update the shape */
-    this._needsPointShapeUpdate = true
   }
 
   /**
