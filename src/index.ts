@@ -116,6 +116,7 @@ export class Graph {
     this.reglInstance = reglInstance
 
     this.store.adjustSpaceSize(this.config.spaceSize, this.reglInstance.limits.maxTextureSize)
+    this.store.setWebGLMaxTextureSize(this.reglInstance.limits.maxTextureSize)
     this.store.updateScreenSize(w, h)
 
     this.canvasD3Selection = select<HTMLCanvasElement, undefined>(this.canvas)

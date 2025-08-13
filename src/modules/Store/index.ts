@@ -29,6 +29,7 @@ export class Store {
   public adjustedSpaceSize = defaultConfigValues.spaceSize
   public isSpaceKeyPressed = false
   public div: HTMLDivElement | undefined
+  public webglMaxTextureSize = 16384 // Default fallback value
 
   public hoveredPointRingColor = [1, 1, 1, hoveredPointRingOpacity]
   public focusedPointRingColor = [1, 1, 1, focusedPointRingOpacity]
@@ -73,6 +74,13 @@ export class Store {
       this.adjustedSpaceSize = webglMaxTextureSize / 2
       console.warn(`The \`spaceSize\` has been reduced to ${this.adjustedSpaceSize} due to WebGL limits`)
     } else this.adjustedSpaceSize = configSpaceSize
+  }
+
+  /**
+   * Sets the WebGL texture size limit for use in atlas creation and other texture operations.
+   */
+  public setWebGLMaxTextureSize (webglMaxTextureSize: number): void {
+    this.webglMaxTextureSize = webglMaxTextureSize
   }
 
   public updateScreenSize (width: number, height: number): void {

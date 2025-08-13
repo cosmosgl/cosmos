@@ -579,7 +579,7 @@ export class Points extends CoreModule {
       return
     }
 
-    const atlasResult = createAtlasDataFromImageData(data.inputImageData, store.maxPointSize)
+    const atlasResult = createAtlasDataFromImageData(data.inputImageData, store.webglMaxTextureSize)
     if (!atlasResult) {
       console.warn('Failed to create atlas from image data')
       return
