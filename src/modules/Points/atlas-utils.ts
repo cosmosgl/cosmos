@@ -8,12 +8,17 @@
  * accommodate the largest image dimension. Images are placed left-to-right, top-to-bottom.
  *
  * @param imageDataArray - Array of ImageData objects to pack into the atlas
- * @param maxPointSize - Maximum point size (used to set the grid cell size for fitting images within this dimension)
- * @returns Atlas data containing the packed texture and UV coordinates, or null if creation fails
+ * @param webglMaxTextureSize - WebGL maximum texture size limit (default: 16384)
+ * @returns Atlas data object containing:
+ *   - atlasData: RGBA pixel data as Uint8Array
+ *   - atlasSize: Total atlas texture size in pixels
+ *   - atlasCoords: UV coordinates for each image as Float32Array
+ *   - atlasCoordsSize: Grid size (number of rows/columns)
+ *   Returns null if creation fails or no valid images provided
  */
 export function createAtlasDataFromImageData (
   imageDataArray: ImageData[],
-  maxPointSize?: number
+  webglMaxTextureSize = 16384
 ): {
   atlasData: Uint8Array;
   atlasSize: number;
@@ -26,7 +31,7 @@ export function createAtlasDataFromImageData (
   }
 
   // Step 2: Find the maximum dimension across all images
-  // This determines the size of each grid cell in the atlas
+  // The max dimension determines the size of each grid cell in the atlas
   let maxDimension = 0
   for (const imageData of imageDataArray) {
     const dimension = Math.max(imageData.width, imageData.height)
@@ -41,60 +46,66 @@ export function createAtlasDataFromImageData (
     return null
   }
 
-  // Step 4: Use maxPointSize if it's smaller than maxDimension to avoid creating overly large textures
-  if (maxPointSize !== undefined && maxPointSize < maxDimension) {
-    maxDimension = Math.floor(maxPointSize)
+  const originalMaxDimension = maxDimension
+
+  // Step 4: Calculate optimal atlas grid size
+  const atlasCoordsSize = Math.ceil(Math.sqrt(imageDataArray.length))
+  let atlasSize = atlasCoordsSize * maxDimension
+
+  // Step 5: Apply WebGL size limit scaling if necessary
+  let scalingFactor = 1.0
+
+  if (atlasSize > webglMaxTextureSize) {
+    // Calculate required scale to fit within WebGL limits
+    scalingFactor = webglMaxTextureSize / atlasSize
+
+    // Apply scaling to both the individual image dimensions and atlas size
+    maxDimension = Math.max(1, Math.floor(maxDimension * scalingFactor))
+    atlasSize = Math.max(1, Math.floor(atlasSize * scalingFactor))
+
+    console.warn(
+      '🖼️  Atlas scaling required: Original size ' +
+      `${(originalMaxDimension * atlasCoordsSize).toLocaleString()}px exceeds WebGL limit ` +
+      `${webglMaxTextureSize.toLocaleString()}px. Scaling down to ${atlasSize.toLocaleString()}px ` +
+      `(${Math.round(scalingFactor * 100)}% of original quality)`
+    )
   }
 
-  // Step 5: Calculate atlas grid dimensions
-  // Grid size is the square root of image count (rounded up)
-  // Total atlas size is grid size * max image dimension
-  const atlasCoordsSize = Math.ceil(Math.sqrt(imageDataArray.length))
-  const atlasSize = atlasCoordsSize * maxDimension
-
   // Step 6: Create buffers for atlas data
-  // atlasData: RGBA pixel data for the entire atlas texture (4 bytes per pixel)
   const atlasData = new Uint8Array(atlasSize * atlasSize * 4).fill(0)
-  // atlasCoords: UV coordinates for each image [minU, minV, maxU, maxV] (4 floats per image)
   const atlasCoords = new Float32Array(atlasCoordsSize * atlasCoordsSize * 4).fill(-1)
 
   // Step 7: Pack each image into the atlas grid
-  // Uses nearest neighbor sampling for images larger than maxDimension
   for (const [index, imageData] of imageDataArray.entries()) {
-    // Extract image dimensions
     const originalWidth = imageData.width
     const originalHeight = imageData.height
-
-    // Calculate scaled dimensions if image is larger than maxDimension
-    let scaledWidth = originalWidth
-    let scaledHeight = originalHeight
-
-    if (originalWidth > maxDimension || originalHeight > maxDimension) {
-      const scale = Math.min(maxDimension / originalWidth, maxDimension / originalHeight)
-      scaledWidth = Math.floor(originalWidth * scale)
-      scaledHeight = Math.floor(originalHeight * scale)
+    if (originalWidth === 0 || originalHeight === 0) {
+      // leave coords at -1 for this index and continue
+      continue
     }
 
+    // Calculate individual scale for this image based on maxDimension
+    // This ensures each image fits optimally within its grid cell
+    const individualScale = Math.min(1.0, maxDimension / Math.max(originalWidth, originalHeight))
+
+    const scaledWidth = Math.floor(originalWidth * individualScale)
+    const scaledHeight = Math.floor(originalHeight * individualScale)
+
     // Calculate grid position (row, column) for this image
-    // Images are placed left-to-right, top-to-bottom in the grid
     const row = Math.floor(index / atlasCoordsSize)
     const col = index % atlasCoordsSize
 
     // Calculate pixel position in the atlas texture
-    // Each grid cell is maxDimension x maxDimension pixels
     const atlasX = col * maxDimension
     const atlasY = row * maxDimension
 
-    // Step 8: Calculate and store UV coordinates for this image
-    // UV coordinates are normalized texture coordinates (0.0 to 1.0)
-    // They tell the shader where to find this image within the atlas
-    atlasCoords[index * 4] = atlasX / atlasSize // minU - left edge of image
-    atlasCoords[index * 4 + 1] = atlasY / atlasSize // minV - top edge of image
-    atlasCoords[index * 4 + 2] = (atlasX + scaledWidth) / atlasSize // maxU - right edge of image
-    atlasCoords[index * 4 + 3] = (atlasY + scaledHeight) / atlasSize // maxV - bottom edge of image
+    // Calculate and store UV coordinates for this image
+    atlasCoords[index * 4] = atlasX / atlasSize // minU
+    atlasCoords[index * 4 + 1] = atlasY / atlasSize // minV
+    atlasCoords[index * 4 + 2] = (atlasX + scaledWidth) / atlasSize // maxU
+    atlasCoords[index * 4 + 3] = (atlasY + scaledHeight) / atlasSize // maxV
 
-    // Step 9: Copy image pixel data into the atlas texture
-    // This copies each pixel from the source image to its position in the atlas
+    // Copy image pixel data into the atlas texture
     for (let y = 0; y < scaledHeight; y++) {
       for (let x = 0; x < scaledWidth; x++) {
         // Calculate source pixel coordinates (with scaling)
@@ -102,28 +113,25 @@ export function createAtlasDataFromImageData (
         const srcY = Math.floor(y * (originalHeight / scaledHeight))
 
         // Calculate source pixel index in the original image
-        // Each pixel is 4 bytes (RGBA): [R, G, B, A]
         const srcIndex = (srcY * originalWidth + srcX) * 4
 
         // Calculate target pixel index in the atlas texture
-        // Position is offset by atlasX and atlasY within the grid cell
         const atlasIndex = ((atlasY + y) * atlasSize + (atlasX + x)) * 4
 
-        // Copy RGBA values from source to atlas with fallback defaults
-        // Use nullish coalescing (??) to handle undefined values
+        // Copy RGBA values from source to atlas
         atlasData[atlasIndex] = imageData.data[srcIndex] ?? 0 // Red channel
         atlasData[atlasIndex + 1] = imageData.data[srcIndex + 1] ?? 0 // Green channel
         atlasData[atlasIndex + 2] = imageData.data[srcIndex + 2] ?? 0 // Blue channel
-        atlasData[atlasIndex + 3] = imageData.data[srcIndex + 3] ?? 255 // Alpha channel (default to opaque)
+        atlasData[atlasIndex + 3] = imageData.data[srcIndex + 3] ?? 255 // Alpha channel
       }
     }
   }
 
-  // Step 10: Return the complete atlas data
+  // Return the complete atlas data
   return {
-    atlasData, // The packed texture data (RGBA pixels)
-    atlasSize, // Width/height of the atlas texture in pixels
-    atlasCoords, // UV coordinates for each image in the atlas
-    atlasCoordsSize, // Size of the atlas grid (e.g., 3x3 grid = 3)
+    atlasData,
+    atlasSize,
+    atlasCoords,
+    atlasCoordsSize,
   }
 }
