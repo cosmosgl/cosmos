@@ -208,7 +208,7 @@ export const imageExample = async (): Promise<{div: HTMLDivElement; graph: Graph
     const imageDataArray = await loadPngImages([swiftUrl, boxUrl, toolboxUrl, legoUrl, sUrl])
 
     // Set images and their indices
-    graph.setImageData(imageDataArray.slice(0, 5))
+    graph.setImageData(imageDataArray)
     graph.setPointImageIndices(imageIndices)
 
     // Set all data

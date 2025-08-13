@@ -171,14 +171,17 @@ export class GraphData {
     if (this.inputPointImageIndices === undefined || this.inputPointImageIndices.length !== this.pointsNumber) {
       this.pointImageIndices = new Float32Array(this.pointsNumber).fill(-1)
     } else {
-      this.pointImageIndices = new Float32Array(this.inputPointImageIndices)
-      const pointImageIndices = this.pointImageIndices
+      const pointImageIndices = new Float32Array(this.inputPointImageIndices)
       for (let i = 0; i < pointImageIndices.length; i++) {
-        const imageIndex = pointImageIndices[i]
-        if (imageIndex == null || !isNumber(imageIndex) || imageIndex < 0) {
+        const rawIndex = pointImageIndices[i]
+        const imageIndex = (rawIndex === undefined) ? NaN : rawIndex
+        if (!Number.isFinite(imageIndex) || imageIndex < 0) {
           pointImageIndices[i] = -1
+        } else {
+          pointImageIndices[i] = Math.trunc(imageIndex)
         }
       }
+      this.pointImageIndices = pointImageIndices
     }
   }
 
