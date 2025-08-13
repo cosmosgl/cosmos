@@ -95,11 +95,7 @@ This method sets the shapes for the graph points.
 
 Each shape value in the array specifies the shape of a point using the same order as the points in the graph data. Invalid shape values (outside the range 0-8) will default to Circle (0).
 
-**Note:** When no shapes are explicitly set:
-* If image data is provided via `setImageData()`, the default shape will be `None` (8) to avoid visual clutter.
-* If no image data is provided, the default shape will be `Circle` (0).
-
-Images are rendered above shapes, so if you explicitly set shapes to values other than `None` (8), both shapes and images will be visible (shapes underneath, images on top).
+Images are rendered above shapes.
 
 **Example:**
 ```javascript
@@ -119,7 +115,7 @@ graph.render();
 
 This method sets the images for the graph points using [ImageData](https://developer.mozilla.org/en-US/docs/Web/API/ImageData) objects. Images are rendered above shapes. To use images, provide image indices via `setPointImageIndices()`.
 
-**Note:** When images are set, the default point shapes automatically change to `None` (8) to avoid visual clutter. Images are rendered above shapes, so if you explicitly set shapes to values other than `None` (8), both shapes and images will be visible (shapes underneath, images on top).
+Images are rendered above shapes.
 
 * **`imageDataArray`** (ImageData[]): Array of ImageData objects to use as point images.
 
@@ -135,7 +131,7 @@ graph.setImageData([imageData1, imageData2]);
 // Set which image each point should use (0 = imageData1, 1 = imageData2)
 graph.setPointImageIndices(new Float32Array([0, 1, 0, 1]));
 
-// To show shapes with images (shapes underneath, images on top)
+// To show shapes with images
 graph.setPointShapes(new Float32Array([0, 1, 2, 3])); // Circle, Square, Triangle, Diamond
 
 graph.render();

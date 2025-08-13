@@ -131,9 +131,8 @@ export class GraphData {
 
   /**
    * Updates the point shapes based on the input data or default shape.
-   * Default behavior: Circle (0) if no images, None (8) if images are present to avoid visual clutter.
-   * Images are rendered above shapes, so if shapes are explicitly set to values other than None (8),
-   * both shapes and images will be visible (shapes underneath, images on top).
+   * Default behavior: Circle (0).
+  * Images are rendered above shapes.
    */
   public updatePointShape (): void {
     if (this.pointsNumber === undefined) {
@@ -141,12 +140,8 @@ export class GraphData {
       return
     }
 
-    // Determine default shape: None if images are available, Circle otherwise
-    // This prevents visual clutter by hiding shapes when images are present
-    // Note: Images are rendered above shapes, so if shapes are explicitly set to values other than None (8),
-    // both shapes and images will be visible (shapes underneath, images on top)
-    const imageCount = this.inputImageData?.length ?? 0
-    const defaultShape = imageCount > 0 ? PointShape.None : PointShape.Circle
+    // Determine default shape: Circle
+    const defaultShape = PointShape.Circle
 
     // Sets point shapes to default values if the input is missing or does not match input points number.
     if (this.inputPointShapes === undefined || this.inputPointShapes.length !== this.pointsNumber) {
