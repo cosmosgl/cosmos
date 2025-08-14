@@ -68,6 +68,7 @@ export class Graph {
   private _needsPointColorUpdate = false
   private _needsPointSizeUpdate = false
   private _needsPointShapeUpdate = false
+  private _needsPointImageIndicesUpdate = false
   private _needsLinksUpdate = false
   private _needsLinkColorUpdate = false
   private _needsLinkWidthUpdate = false
@@ -76,6 +77,7 @@ export class Graph {
   private _needsForceManyBodyUpdate = false
   private _needsForceLinkUpdate = false
   private _needsForceCenterUpdate = false
+  private _needsPointImageSizesUpdate = false
 
   private _isDestroyed = false
 
@@ -114,6 +116,7 @@ export class Graph {
     this.reglInstance = reglInstance
 
     this.store.adjustSpaceSize(this.config.spaceSize, this.reglInstance.limits.maxTextureSize)
+    this.store.setWebGLMaxTextureSize(this.reglInstance.limits.maxTextureSize)
     this.store.updateScreenSize(w, h)
 
     this.canvasD3Selection = select<HTMLCanvasElement, undefined>(this.canvas)
@@ -305,6 +308,7 @@ export class Graph {
     this._needsPointColorUpdate = true
     this._needsPointSizeUpdate = true
     this._needsPointShapeUpdate = true
+    this._needsPointImageIndicesUpdate = true
     this._needsPointClusterUpdate = true
     this._needsForceManyBodyUpdate = true
     this._needsForceLinkUpdate = true
@@ -353,13 +357,55 @@ export class Graph {
    *
    * @param {Float32Array} pointShapes - A Float32Array representing the shapes of points in the format [shape1, shape2, ..., shapen],
    * where `n` is the index of the point and each shape value corresponds to a PointShape enum:
-   * 0 = Circle, 1 = Square, 2 = Triangle, 3 = Diamond, 4 = Pentagon, 5 = Hexagon, 6 = Star, 7 = Cross.
+   * 0 = Circle, 1 = Square, 2 = Triangle, 3 = Diamond, 4 = Pentagon, 5 = Hexagon, 6 = Star, 7 = Cross, 8 = None.
    * Example: `new Float32Array([0, 1, 2])` sets the first point to Circle, the second point to Square, and the third point to Triangle.
+   * Images are rendered above shapes.
    */
   public setPointShapes (pointShapes: Float32Array): void {
     if (this._isDestroyed) return
     this.graph.inputPointShapes = pointShapes
     this._needsPointShapeUpdate = true
+  }
+
+  /**
+   * Sets the images for the graph points using ImageData objects.
+   * Images are rendered above shapes.
+   * To use images, provide image indices via setPointImageIndices().
+   *
+   * @param {ImageData[]} imageDataArray - Array of ImageData objects to use as point images.
+   * Example: `setImageData([imageData1, imageData2, imageData3])`
+   */
+  public setImageData (imageDataArray: ImageData[]): void {
+    if (this._isDestroyed || !this.points) return
+    this.graph.inputImageData = imageDataArray
+    this.points.createAtlas()
+  }
+
+  /**
+   * Sets which image each point should use from the images array.
+   * Images are rendered above shapes.
+   *
+   * @param {Float32Array} imageIndices - A Float32Array representing which image each point uses in the format [index1, index2, ..., indexn],
+   * where `n` is the index of the point and each value is an index into the images array provided to `setImageData`.
+   * Example: `new Float32Array([0, 1, 0])` sets the first point to use image 0, second point to use image 1, third point to use image 0.
+   */
+  public setPointImageIndices (imageIndices: Float32Array): void {
+    if (this._isDestroyed) return
+    this.graph.inputPointImageIndices = imageIndices
+    this._needsPointImageIndicesUpdate = true
+  }
+
+  /**
+   * Sets the sizes for the point images.
+   *
+   * @param {Float32Array} imageSizes - A Float32Array representing the sizes of point images in the format [size1, size2, ..., sizen],
+   * where `n` is the index of the point.
+   * Example: `new Float32Array([10, 20, 30])` sets the first image to size 10, the second image to size 20, and the third image to size 30.
+   */
+  public setPointImageSizes (imageSizes: Float32Array): void {
+    if (this._isDestroyed) return
+    this.graph.inputPointImageSizes = imageSizes
+    this._needsPointImageSizesUpdate = true
   }
 
   /**
@@ -1118,6 +1164,8 @@ export class Graph {
     if (this._needsPointColorUpdate) this.points.updateColor()
     if (this._needsPointSizeUpdate) this.points.updateSize()
     if (this._needsPointShapeUpdate) this.points.updateShape()
+    if (this._needsPointImageIndicesUpdate) this.points.updateImageIndices()
+    if (this._needsPointImageSizesUpdate) this.points.updateImageSizes()
 
     if (this._needsLinksUpdate) this.lines.updatePointsBuffer()
     if (this._needsLinkColorUpdate) this.lines.updateColor()
@@ -1136,6 +1184,8 @@ export class Graph {
     this._needsPointColorUpdate = false
     this._needsPointSizeUpdate = false
     this._needsPointShapeUpdate = false
+    this._needsPointImageIndicesUpdate = false
+    this._needsPointImageSizesUpdate = false
     this._needsLinksUpdate = false
     this._needsLinkColorUpdate = false
     this._needsLinkWidthUpdate = false
