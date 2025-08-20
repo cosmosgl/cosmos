@@ -38,6 +38,8 @@ export class Points extends CoreModule {
   private trackedIndicesFbo: regl.Framebuffer2D | undefined
   private trackedPositionsFbo: regl.Framebuffer2D | undefined
   private sampledPointsFbo: regl.Framebuffer2D | undefined
+  private trackedPositions: Map<number, [number, number]> | undefined
+  private positionsAreUpToDate = false
   private drawCommand: regl.DrawCommand | undefined
   private drawHighlightedCommand: regl.DrawCommand | undefined
   private updatePositionCommand: regl.DrawCommand | undefined
@@ -589,11 +591,15 @@ export class Points extends CoreModule {
   public updatePosition (): void {
     this.updatePositionCommand?.()
     this.swapFbo()
+    // Invalidate tracked positions cache since positions have changed
+    this.positionsAreUpToDate = false
   }
 
   public drag (): void {
     this.dragPointCommand?.()
     this.swapFbo()
+    // Invalidate tracked positions cache since positions have changed
+    this.positionsAreUpToDate = false
   }
 
   public findPointsOnAreaSelection (): void {
@@ -651,6 +657,11 @@ export class Points extends CoreModule {
   public trackPointsByIndices (indices?: number[] | undefined): void {
     const { store: { pointsTextureSize }, reglInstance } = this
     this.trackedIndices = indices
+
+    // Clear cache when changing tracked indices
+    this.trackedPositions = undefined
+    this.positionsAreUpToDate = false
+
     if (!indices?.length) return
     const textureSize = Math.ceil(Math.sqrt(indices.length))
 
@@ -688,10 +699,29 @@ export class Points extends CoreModule {
     this.trackPoints()
   }
 
-  public getTrackedPositionsMap (): Map<number, [number, number]> {
-    const tracked = new Map<number, [number, number]>()
-    if (!this.trackedIndices) return tracked
+  /**
+   * Get current X and Y coordinates of the tracked points.
+   *
+   * When the simulation is disabled or stopped, this method returns a cached
+   * result to avoid expensive GPU-to-CPU memory transfers (`readPixels`).
+   *
+   * @returns A ReadonlyMap where keys are point indices and values are [x, y] coordinates.
+   */
+  public getTrackedPositionsMap (): ReadonlyMap<number, [number, number]> {
+    if (!this.trackedIndices) return new Map()
+
+    const { config: { enableSimulation }, store: { isSimulationRunning } } = this
+
+    // Use cached positions when simulation is inactive and cache is valid
+    if ((!enableSimulation || !isSimulationRunning) &&
+        this.positionsAreUpToDate &&
+        this.trackedPositions) {
+      return this.trackedPositions
+    }
+
     const pixels = readPixels(this.reglInstance, this.trackedPositionsFbo as regl.Framebuffer2D)
+
+    const tracked = new Map<number, [number, number]>()
     for (let i = 0; i < pixels.length / 4; i += 1) {
       const x = pixels[i * 4]
       const y = pixels[i * 4 + 1]
@@ -700,6 +730,13 @@ export class Points extends CoreModule {
         tracked.set(index, [x, y])
       }
     }
+
+    // If simulation is inactive, cache the result for next time
+    if (!enableSimulation || !isSimulationRunning) {
+      this.trackedPositions = tracked
+      this.positionsAreUpToDate = true
+    }
+
     return tracked
   }
 

@@ -936,9 +936,11 @@ export class Graph {
 
   /**
    * Get current X and Y coordinates of the tracked points.
-   * @returns A Map object where keys are the indices of the points and values are their corresponding X and Y coordinates in the [number, number] format.
+   * Do not mutate the returned map - it may affect future calls.
+   * @returns A ReadonlyMap where keys are point indices and values are their corresponding X and Y coordinates in the [number, number] format.
+   * @see trackPointPositionsByIndices To set which points should be tracked
    */
-  public getTrackedPointPositionsMap (): Map<number, [number, number]> {
+  public getTrackedPointPositionsMap (): ReadonlyMap<number, [number, number]> {
     if (this._isDestroyed || !this.points) return new Map()
     return this.points.getTrackedPositionsMap()
   }
