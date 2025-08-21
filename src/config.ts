@@ -98,6 +98,12 @@ export interface GraphConfigInterface {
   hoveredPointCursor?: string;
 
   /**
+   * Cursor style to use when hovering over a link
+   * Default value: `auto`
+   */
+  hoveredLinkCursor?: string;
+
+  /**
    * Turns ring rendering around a point on hover on / off
    * Default value: `false`
    */
@@ -157,6 +163,19 @@ export interface GraphConfigInterface {
    * Default value: `1`
   */
   linkWidth?: number;
+  /**
+   * The color to use for links when they are hovered.
+   * This can be either a hex color string (e.g., '#ff3333') or an array of RGBA values
+   * in the format `[red, green, blue, alpha]` where each value is a number between 0 and 255.
+   * Default value: '#ff3333'
+   */
+  hoveredLinkColor?: string | [number, number, number, number];
+  /**
+   * Number of pixels to add to the link width when hovered.
+   * The hovered width is calculated as: originalWidth + hoveredLinkWidthIncrease
+   * Default value: `2`
+   */
+  hoveredLinkWidthIncrease?: number;
   /**
    * Scale factor for the link width.
    * Default value: `1`
@@ -374,6 +393,22 @@ export interface GraphConfigInterface {
   onPointMouseOut?: (event: MouseEvent | D3ZoomEvent<HTMLCanvasElement, undefined> | D3DragEvent<HTMLCanvasElement, undefined, Hovered> | undefined) => void;
 
   /**
+   * Callback function that will be called when the mouse moves over a link.
+   * The link index will be passed as the first argument:
+   * `(linkIndex: number) => void`.
+   * Default value: `undefined`
+   */
+  onLinkMouseOver?: (linkIndex: number) => void;
+
+  /**
+   * Callback function that will be called when the mouse moves out of a link.
+   * The link index will be passed as the first argument:
+   * `(linkIndex: number) => void`.
+   * Default value: `undefined`
+   */
+  onLinkMouseOut?: () => void;
+
+  /**
    * Callback function that will be called when zooming or panning starts.
    * First argument is a D3 Zoom Event and second indicates whether
    * the event has been initiated by a user interaction (e.g. a mouse event):
@@ -545,6 +580,7 @@ export class GraphConfig implements GraphConfigInterface {
   public pointOpacity = defaultPointOpacity
   public pointSizeScale = defaultConfigValues.pointSizeScale
   public hoveredPointCursor = defaultConfigValues.hoveredPointCursor
+  public hoveredLinkCursor = defaultConfigValues.hoveredLinkCursor
   public renderHoveredPointRing = defaultConfigValues.renderHoveredPointRing
   public hoveredPointRingColor = defaultConfigValues.hoveredPointRingColor
   public focusedPointRingColor = defaultConfigValues.focusedPointRingColor
@@ -554,6 +590,8 @@ export class GraphConfig implements GraphConfigInterface {
   public linkGreyoutOpacity = defaultGreyoutLinkOpacity
   public linkWidth = defaultLinkWidth
   public linkWidthScale = defaultConfigValues.linkWidthScale
+  public hoveredLinkColor = defaultConfigValues.hoveredLinkColor
+  public hoveredLinkWidthIncrease = defaultConfigValues.hoveredLinkWidthIncrease
   public renderLinks = defaultConfigValues.renderLinks
   public curvedLinks = defaultConfigValues.curvedLinks
   public curvedLinkSegments = defaultConfigValues.curvedLinkSegments
@@ -590,6 +628,8 @@ export class GraphConfig implements GraphConfigInterface {
   public onMouseMove: GraphConfigInterface['onMouseMove'] = undefined
   public onPointMouseOver: GraphConfigInterface['onPointMouseOver'] = undefined
   public onPointMouseOut: GraphConfigInterface['onPointMouseOut'] = undefined
+  public onLinkMouseOver: GraphConfigInterface['onLinkMouseOver'] = undefined
+  public onLinkMouseOut: GraphConfigInterface['onLinkMouseOut'] = undefined
   public onZoomStart: GraphConfigInterface['onZoomStart'] = undefined
   public onZoom: GraphConfigInterface['onZoom'] = undefined
   public onZoomEnd: GraphConfigInterface['onZoomEnd'] = undefined
