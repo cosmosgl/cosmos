@@ -64,18 +64,18 @@ export class Graph {
   private _isFirstRenderAfterInit = true
   private _fitViewOnInitTimeoutID: number | undefined
 
-  private _needsPointPositionsUpdate = false
-  private _needsPointColorUpdate = false
-  private _needsPointSizeUpdate = false
-  private _needsPointShapeUpdate = false
-  private _needsLinksUpdate = false
-  private _needsLinkColorUpdate = false
-  private _needsLinkWidthUpdate = false
-  private _needsLinkArrowUpdate = false
-  private _needsPointClusterUpdate = false
-  private _needsForceManyBodyUpdate = false
-  private _needsForceLinkUpdate = false
-  private _needsForceCenterUpdate = false
+  private isPointPositionsUpdateNeeded = false
+  private isPointColorUpdateNeeded = false
+  private isPointSizeUpdateNeeded = false
+  private isPointShapeUpdateNeeded = false
+  private isLinksUpdateNeeded = false
+  private isLinkColorUpdateNeeded = false
+  private isLinkWidthUpdateNeeded = false
+  private isLinkArrowUpdateNeeded = false
+  private isPointClusterUpdateNeeded = false
+  private isForceManyBodyUpdateNeeded = false
+  private isForceLinkUpdateNeeded = false
+  private isForceCenterUpdateNeeded = false
 
   private _isDestroyed = false
 
@@ -297,18 +297,18 @@ export class Graph {
   public setPointPositions (pointPositions: Float32Array, dontRescale?: boolean | undefined): void {
     if (this._isDestroyed || !this.points) return
     this.graph.inputPointPositions = pointPositions
-    this.points.dontRescale = dontRescale
-    this._needsPointPositionsUpdate = true
+    this.points.shouldSkipRescale = dontRescale
+    this.isPointPositionsUpdateNeeded = true
     // Links related texture depends on point positions, so we need to update it
-    this._needsLinksUpdate = true
+    this.isLinksUpdateNeeded = true
     // Point related textures depend on point positions length, so we need to update them
-    this._needsPointColorUpdate = true
-    this._needsPointSizeUpdate = true
-    this._needsPointShapeUpdate = true
-    this._needsPointClusterUpdate = true
-    this._needsForceManyBodyUpdate = true
-    this._needsForceLinkUpdate = true
-    this._needsForceCenterUpdate = true
+    this.isPointColorUpdateNeeded = true
+    this.isPointSizeUpdateNeeded = true
+    this.isPointShapeUpdateNeeded = true
+    this.isPointClusterUpdateNeeded = true
+    this.isForceManyBodyUpdateNeeded = true
+    this.isForceLinkUpdateNeeded = true
+    this.isForceCenterUpdateNeeded = true
   }
 
   /**
@@ -321,7 +321,7 @@ export class Graph {
   public setPointColors (pointColors: Float32Array): void {
     if (this._isDestroyed) return
     this.graph.inputPointColors = pointColors
-    this._needsPointColorUpdate = true
+    this.isPointColorUpdateNeeded = true
   }
 
   /**
@@ -345,7 +345,7 @@ export class Graph {
   public setPointSizes (pointSizes: Float32Array): void {
     if (this._isDestroyed) return
     this.graph.inputPointSizes = pointSizes
-    this._needsPointSizeUpdate = true
+    this.isPointSizeUpdateNeeded = true
   }
 
   /**
@@ -359,7 +359,7 @@ export class Graph {
   public setPointShapes (pointShapes: Float32Array): void {
     if (this._isDestroyed) return
     this.graph.inputPointShapes = pointShapes
-    this._needsPointShapeUpdate = true
+    this.isPointShapeUpdateNeeded = true
   }
 
   /**
@@ -384,12 +384,12 @@ export class Graph {
   public setLinks (links: Float32Array): void {
     if (this._isDestroyed) return
     this.graph.inputLinks = links
-    this._needsLinksUpdate = true
+    this.isLinksUpdateNeeded = true
     // Links related texture depends on links length, so we need to update it
-    this._needsLinkColorUpdate = true
-    this._needsLinkWidthUpdate = true
-    this._needsLinkArrowUpdate = true
-    this._needsForceLinkUpdate = true
+    this.isLinkColorUpdateNeeded = true
+    this.isLinkWidthUpdateNeeded = true
+    this.isLinkArrowUpdateNeeded = true
+    this.isForceLinkUpdateNeeded = true
   }
 
   /**
@@ -402,7 +402,7 @@ export class Graph {
   public setLinkColors (linkColors: Float32Array): void {
     if (this._isDestroyed) return
     this.graph.inputLinkColors = linkColors
-    this._needsLinkColorUpdate = true
+    this.isLinkColorUpdateNeeded = true
   }
 
   /**
@@ -426,7 +426,7 @@ export class Graph {
   public setLinkWidths (linkWidths: Float32Array): void {
     if (this._isDestroyed) return
     this.graph.inputLinkWidths = linkWidths
-    this._needsLinkWidthUpdate = true
+    this.isLinkWidthUpdateNeeded = true
   }
 
   /**
@@ -450,7 +450,7 @@ export class Graph {
   public setLinkArrows (linkArrows: boolean[]): void {
     if (this._isDestroyed) return
     this.graph.linkArrowsBoolean = linkArrows
-    this._needsLinkArrowUpdate = true
+    this.isLinkArrowUpdateNeeded = true
   }
 
   /**
@@ -463,7 +463,7 @@ export class Graph {
   public setLinkStrength (linkStrength: Float32Array): void {
     if (this._isDestroyed) return
     this.graph.inputLinkStrength = linkStrength
-    this._needsForceLinkUpdate = true
+    this.isForceLinkUpdateNeeded = true
   }
 
   /**
@@ -480,7 +480,7 @@ export class Graph {
   public setPointClusters (pointClusters: (number | undefined)[]): void {
     if (this._isDestroyed) return
     this.graph.inputPointClusters = pointClusters
-    this._needsPointClusterUpdate = true
+    this.isPointClusterUpdateNeeded = true
   }
 
   /**
@@ -496,7 +496,7 @@ export class Graph {
   public setClusterPositions (clusterPositions: (number | undefined)[]): void {
     if (this._isDestroyed) return
     this.graph.inputClusterPositions = clusterPositions
-    this._needsPointClusterUpdate = true
+    this.isPointClusterUpdateNeeded = true
   }
 
   /**
@@ -512,7 +512,7 @@ export class Graph {
   public setPointClusterStrength (clusterStrength: Float32Array): void {
     if (this._isDestroyed) return
     this.graph.inputClusterStrength = clusterStrength
-    this._needsPointClusterUpdate = true
+    this.isPointClusterUpdateNeeded = true
   }
 
   /**
@@ -1116,36 +1116,36 @@ export class Graph {
    */
   public create (): void {
     if (this._isDestroyed || !this.points || !this.lines) return
-    if (this._needsPointPositionsUpdate) this.points.updatePositions()
-    if (this._needsPointColorUpdate) this.points.updateColor()
-    if (this._needsPointSizeUpdate) this.points.updateSize()
-    if (this._needsPointShapeUpdate) this.points.updateShape()
+    if (this.isPointPositionsUpdateNeeded) this.points.updatePositions()
+    if (this.isPointColorUpdateNeeded) this.points.updateColor()
+    if (this.isPointSizeUpdateNeeded) this.points.updateSize()
+    if (this.isPointShapeUpdateNeeded) this.points.updateShape()
 
-    if (this._needsLinksUpdate) this.lines.updatePointsBuffer()
-    if (this._needsLinkColorUpdate) this.lines.updateColor()
-    if (this._needsLinkWidthUpdate) this.lines.updateWidth()
-    if (this._needsLinkArrowUpdate) this.lines.updateArrow()
+    if (this.isLinksUpdateNeeded) this.lines.updatePointsBuffer()
+    if (this.isLinkColorUpdateNeeded) this.lines.updateColor()
+    if (this.isLinkWidthUpdateNeeded) this.lines.updateWidth()
+    if (this.isLinkArrowUpdateNeeded) this.lines.updateArrow()
 
-    if (this._needsForceManyBodyUpdate) this.forceManyBody?.create()
-    if (this._needsForceLinkUpdate) {
+    if (this.isForceManyBodyUpdateNeeded) this.forceManyBody?.create()
+    if (this.isForceLinkUpdateNeeded) {
       this.forceLinkIncoming?.create(LinkDirection.INCOMING)
       this.forceLinkOutgoing?.create(LinkDirection.OUTGOING)
     }
-    if (this._needsForceCenterUpdate) this.forceCenter?.create()
-    if (this._needsPointClusterUpdate) this.clusters?.create()
+    if (this.isForceCenterUpdateNeeded) this.forceCenter?.create()
+    if (this.isPointClusterUpdateNeeded) this.clusters?.create()
 
-    this._needsPointPositionsUpdate = false
-    this._needsPointColorUpdate = false
-    this._needsPointSizeUpdate = false
-    this._needsPointShapeUpdate = false
-    this._needsLinksUpdate = false
-    this._needsLinkColorUpdate = false
-    this._needsLinkWidthUpdate = false
-    this._needsLinkArrowUpdate = false
-    this._needsPointClusterUpdate = false
-    this._needsForceManyBodyUpdate = false
-    this._needsForceLinkUpdate = false
-    this._needsForceCenterUpdate = false
+    this.isPointPositionsUpdateNeeded = false
+    this.isPointColorUpdateNeeded = false
+    this.isPointSizeUpdateNeeded = false
+    this.isPointShapeUpdateNeeded = false
+    this.isLinksUpdateNeeded = false
+    this.isLinkColorUpdateNeeded = false
+    this.isLinkWidthUpdateNeeded = false
+    this.isLinkArrowUpdateNeeded = false
+    this.isPointClusterUpdateNeeded = false
+    this.isForceManyBodyUpdateNeeded = false
+    this.isForceLinkUpdateNeeded = false
+    this.isForceCenterUpdateNeeded = false
   }
 
   /**

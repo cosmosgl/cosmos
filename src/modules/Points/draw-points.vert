@@ -21,7 +21,7 @@ uniform vec4 greyoutColor;
 uniform vec4 backgroundColor;
 uniform bool scalePointsOnZoom;
 uniform float maxPointSize;
-uniform bool darkenGreyout;
+uniform bool isDarkenGreyout;
 uniform bool skipSelected;
 uniform bool skipUnselected;
 
@@ -82,10 +82,10 @@ void main() {
       rgbColor = greyoutColor.rgb;
       alpha = greyoutColor.a;
     } else {
-      // If greyoutColor is not set, make color lighter or darker based on darkenGreyout
+      // If greyoutColor is not set, make color lighter or darker based on isDarkenGreyout
       float blendFactor = 0.65; // Controls how much to modify (0.0 = original, 1.0 = target color)
       
-      if (darkenGreyout) {
+      if (isDarkenGreyout) {
         // Darken the color
         rgbColor = mix(rgbColor, vec3(0.2), blendFactor);
       } else {

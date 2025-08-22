@@ -30,7 +30,7 @@ export class Points extends CoreModule {
   public greyoutStatusFbo: regl.Framebuffer2D | undefined
   public scaleX: ((x: number) => number) | undefined
   public scaleY: ((y: number) => number) | undefined
-  public dontRescale: boolean | undefined
+  public shouldSkipRescale: boolean | undefined
   private colorBuffer: regl.Buffer | undefined
   private sizeFbo: regl.Framebuffer2D | undefined
   private sizeBuffer: regl.Buffer | undefined
@@ -39,7 +39,7 @@ export class Points extends CoreModule {
   private trackedPositionsFbo: regl.Framebuffer2D | undefined
   private sampledPointsFbo: regl.Framebuffer2D | undefined
   private trackedPositions: Map<number, [number, number]> | undefined
-  private positionsAreUpToDate = false
+  private isPositionsUpToDate = false
   private drawCommand: regl.DrawCommand | undefined
   private drawHighlightedCommand: regl.DrawCommand | undefined
   private updatePositionCommand: regl.DrawCommand | undefined
@@ -74,21 +74,21 @@ export class Points extends CoreModule {
     let shouldRescale = rescalePositions
     // If rescalePositions isn't specified in config and simulation is disabled, default to true
     if (rescalePositions === undefined && !enableSimulation) shouldRescale = true
-    // Skip rescaling if `dontRescale` flag is set (allowing one-time skip of rescaling)
+    // Skip rescaling if `shouldSkipRescale` flag is set (allowing one-time skip of rescaling)
     // Temporary flag is used to skip rescaling when change point positions or adding new points by function `setPointPositions`
     // This flag overrides any other rescaling settings
-    if (this.dontRescale) shouldRescale = false
+    if (this.shouldSkipRescale) shouldRescale = false
 
     if (shouldRescale) {
       this.rescaleInitialNodePositions()
-    } else if (!this.dontRescale) {
+    } else if (!this.shouldSkipRescale) {
       // Only reset scale functions if not temporarily skipping rescale
       this.scaleX = undefined
       this.scaleY = undefined
     }
 
     // Reset temporary flag
-    this.dontRescale = undefined
+    this.shouldSkipRescale = undefined
 
     for (let i = 0; i < data.pointsNumber; ++i) {
       initialState[i * 4 + 0] = data.pointPositions[i * 2 + 0] as number
@@ -243,7 +243,7 @@ export class Points extends CoreModule {
           greyoutOpacity: () => config.pointGreyoutOpacity ?? -1,
           greyoutColor: () => store.greyoutPointColor,
           backgroundColor: () => store.backgroundColor,
-          darkenGreyout: () => store.darkenGreyout,
+          isDarkenGreyout: () => store.isDarkenGreyout,
           scalePointsOnZoom: () => config.scalePointsOnZoom,
           maxPointSize: () => store.maxPointSize,
           skipSelected: reglInstance.prop<{ skipSelected: boolean }, 'skipSelected'>('skipSelected'),
@@ -287,8 +287,8 @@ export class Points extends CoreModule {
           sizeScale: () => config.pointSizeScale,
           transformationMatrix: () => store.transform,
           ratio: () => config.pixelRatio,
-          'selection[0]': () => store.selectedArea[0],
-          'selection[1]': () => store.selectedArea[1],
+          selection0: () => store.selectedArea[0],
+          selection1: () => store.selectedArea[1],
           scalePointsOnZoom: () => config.scalePointsOnZoom,
           maxPointSize: () => store.maxPointSize,
         },
@@ -424,7 +424,7 @@ export class Points extends CoreModule {
           pointGreyoutStatusTexture: () => this.greyoutStatusFbo,
           universalPointOpacity: () => config.pointOpacity,
           greyoutOpacity: () => config.pointGreyoutOpacity ?? -1,
-          darkenGreyout: () => store.darkenGreyout,
+          isDarkenGreyout: () => store.isDarkenGreyout,
           backgroundColor: () => store.backgroundColor,
           greyoutColor: () => store.greyoutPointColor,
         },
@@ -592,14 +592,14 @@ export class Points extends CoreModule {
     this.updatePositionCommand?.()
     this.swapFbo()
     // Invalidate tracked positions cache since positions have changed
-    this.positionsAreUpToDate = false
+    this.isPositionsUpToDate = false
   }
 
   public drag (): void {
     this.dragPointCommand?.()
     this.swapFbo()
     // Invalidate tracked positions cache since positions have changed
-    this.positionsAreUpToDate = false
+    this.isPositionsUpToDate = false
   }
 
   public findPointsOnAreaSelection (): void {
@@ -660,7 +660,7 @@ export class Points extends CoreModule {
 
     // Clear cache when changing tracked indices
     this.trackedPositions = undefined
-    this.positionsAreUpToDate = false
+    this.isPositionsUpToDate = false
 
     if (!indices?.length) return
     const textureSize = Math.ceil(Math.sqrt(indices.length))
@@ -714,7 +714,7 @@ export class Points extends CoreModule {
 
     // Use cached positions when simulation is inactive and cache is valid
     if ((!enableSimulation || !isSimulationRunning) &&
-        this.positionsAreUpToDate &&
+        this.isPositionsUpToDate &&
         this.trackedPositions) {
       return this.trackedPositions
     }
@@ -734,7 +734,7 @@ export class Points extends CoreModule {
     // If simulation is inactive, cache the result for next time
     if (!enableSimulation || !isSimulationRunning) {
       this.trackedPositions = tracked
-      this.positionsAreUpToDate = true
+      this.isPositionsUpToDate = true
     }
 
     return tracked
