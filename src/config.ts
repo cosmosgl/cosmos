@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { D3ZoomEvent } from 'd3-zoom'
 import { D3DragEvent } from 'd3-drag'
 import {

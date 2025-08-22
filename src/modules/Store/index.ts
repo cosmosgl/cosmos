@@ -34,8 +34,8 @@ export class Store {
   public focusedPointRingColor = [1, 1, 1, focusedPointRingOpacity]
   // -1 means that the color is not set
   public greyoutPointColor = [-1, -1, -1, -1]
-  // If backgroundColor is dark, darkenGreyout is true
-  public darkenGreyout = false
+  // If backgroundColor is dark, isDarkenGreyout is true
+  public isDarkenGreyout = false
   private alphaTarget = 0
   private scalePointX = scaleLinear()
   private scalePointY = scaleLinear()
@@ -53,7 +53,7 @@ export class Store {
     document.documentElement.style.setProperty('--cosmosgl-error-message-color', brightness > 0.65 ? 'black' : 'white')
     if (this.div) this.div.style.backgroundColor = `rgba(${color[0] * 255}, ${color[1] * 255}, ${color[2] * 255}, ${color[3]})`
 
-    this.darkenGreyout = brightness < 0.65
+    this.isDarkenGreyout = brightness < 0.65
   }
 
   public addRandomSeed (seed: number | string): void {
