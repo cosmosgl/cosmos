@@ -662,7 +662,7 @@ export class Points extends CoreModule {
     this.trackedPositions = undefined
     this.isPositionsUpToDate = false
 
-    if (!indices?.length) return
+    if (!indices?.length || !pointsTextureSize) return
     const textureSize = Math.ceil(Math.sqrt(indices.length))
 
     const initialState = new Float32Array(textureSize * textureSize * 4).fill(-1)
