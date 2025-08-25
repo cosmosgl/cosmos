@@ -7,7 +7,7 @@ precision highp float;
 uniform float greyoutOpacity;
 uniform float pointOpacity;
 uniform sampler2D imageAtlasTexture;
-uniform bool darkenGreyout;
+uniform bool isDarkenGreyout;
 uniform vec4 backgroundColor;
 
 
@@ -46,7 +46,7 @@ vec4 applyGreyoutToImage(vec4 imageColor) {
     if (isGreyedOut > 0.0) {
         float blendFactor = 0.65; // Controls how much to modify (0.0 = original, 1.0 = target color)
         
-        if (darkenGreyout) {
+        if (isDarkenGreyout) {
             finalColor = mix(finalColor, vec3(0.2), blendFactor);
         } else {
             finalColor = mix(finalColor, max(backgroundColor.rgb, vec3(0.8)), blendFactor);
